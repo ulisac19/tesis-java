@@ -13,14 +13,14 @@ public class AlgoritmoGenetico
     private long marcaTiempoFin;
     private long marcaTiempoInicio;
     private int iterador;
-    private Parametros p;
+    private Parametros parametros;
    
     
-    public AlgoritmoGenetico(Parametros p){
+    public AlgoritmoGenetico(Parametros parametros){
         poblacion = new ArrayList<>();
         listaElite = new ArrayList<>();
         iterador = 0;
-        this.p = p;
+        this.parametros = parametros;
     }
     
     public void agregarIndividuoPoblacion(Individuo individuo){}
@@ -50,12 +50,12 @@ public class AlgoritmoGenetico
     
     public boolean maximoIteraciones(int iteraciones)
     {
-        return iteraciones >= p.ALGORTIMO_GENETICO_CONDICION_PARADA_MAXIMO_ITERACIONES;
+        return iteraciones >= parametros.ALGORTIMO_GENETICO_CONDICION_PARADA_MAXIMO_ITERACIONES;
     }
     
     public boolean maximoTiempo(int tiempo)
     {
-        return tiempo >= p.ALGORTIMO_GENETICO_CONDICION_PARADA_MAXIMO_SEGUNDOS;
+        return tiempo >= parametros.ALGORTIMO_GENETICO_CONDICION_PARADA_MAXIMO_SEGUNDOS;
     }
     
     public boolean nivelOptimo() //mucho tiempo sin mejora significativamente
@@ -110,17 +110,17 @@ public class AlgoritmoGenetico
         Rango busqueTabu = new Rango();
         
         a = 1;
-        b = a + (int)p.ALGORTIMO_GENETICO_PROBABILIDAD_MUTACION*100;
+        b = a + (int)parametros.ALGORTIMO_GENETICO_PROBABILIDAD_MUTACION*100;
         mutacion.setInicio(a);
         mutacion.setFin(b);
         
         a = b + 1;
-        b = a + (int)p.ALGORTIMO_GENETICO_PROBABILIDAD_CRUCE*100;
+        b = a + (int)parametros.ALGORTIMO_GENETICO_PROBABILIDAD_CRUCE*100;
         cruce.setInicio(a);
         cruce.setFin(b);
         
         a = b + 1;
-        b = a + (int)p.ALGORTIMO_GENETICO_PROBABILIDAD_BUSQUEDA_TABU*100;
+        b = a + (int)parametros.ALGORTIMO_GENETICO_PROBABILIDAD_BUSQUEDA_TABU*100;
         busqueTabu.setInicio(a);
         busqueTabu.setFin(b);
         
