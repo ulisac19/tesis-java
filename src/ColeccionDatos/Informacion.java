@@ -4,7 +4,7 @@ public class Informacion {
     
     private int dato1;
     private int dato2;
-    private int tipoNodo; // CLASE TYPE_NODO
+    private int tipoNodo; 
 
     public Informacion(int dato1, int dato2, int tipoNodo) {
         this.dato1 = dato1;

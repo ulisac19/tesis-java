@@ -42,7 +42,7 @@ public class Parametros {
     
     public Parametros() throws SQLException {
         
-         Connection miConexion;
+        Connection miConexion;
         miConexion =  ConexionDB.GetConnection();
         Statement st = miConexion.createStatement();
         if(miConexion==null)
@@ -62,7 +62,7 @@ public class Parametros {
             this.ALGORTIMO_GENETICO_PROBABILIDAD_BUSQUEDA_TABU          = (float) queryGenetico.getObject("probabilidad_tabu");  
             this.ALGORTIMO_GENETICO_CANTIDAD_LISTA_ELITE                = (int) (this.ALGORTIMO_GENETICO_MAXIMO_NUMERO_GENERACION * this.ALGORTIMO_GENETICO_PORCENTAJE_LISTA_ELITE);
         
-        ResultSet queryTabu = st.executeQuery("SELECT * FROM parametrosgenetico");
+        ResultSet queryTabu = st.executeQuery("SELECT * FROM parametrostabu");
         queryTabu.next();
         
             this.ALGORTIMO_TABU_CONDICION_PARADA_MEJORA_ACEPTABLE       = (float) queryTabu.getObject("mejora_aceptable");

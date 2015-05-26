@@ -7,8 +7,7 @@ public class Nodo
     private Nodo hijo;
     
     
-    public Nodo() {
-    }
+   
 
     public Nodo(Informacion info, Nodo hermano, Nodo hijo) 
     {
@@ -16,6 +15,7 @@ public class Nodo
         this.hermano = hermano;    
         this.hijo = hijo;
     }
+
 
     public Informacion getInfo() 
     { 

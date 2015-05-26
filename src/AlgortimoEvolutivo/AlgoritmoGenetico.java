@@ -1,8 +1,15 @@
 package AlgortimoEvolutivo;
 
+import BaseDatos.ConexionDB;
 import ColeccionDatos.Arbol;
+import ColeccionDatos.Informacion;
+import ColeccionDatos.Nodo;
 import ColeccionDatos.Parametros;
 import ColeccionDatos.Rango;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -14,6 +21,7 @@ public class AlgoritmoGenetico
     private long marcaTiempoInicio;
     private int iterador;
     private Parametros parametros;
+    private Arbol arbol;
    
     
     public AlgoritmoGenetico(Parametros parametros){
@@ -25,15 +33,48 @@ public class AlgoritmoGenetico
     
     public void agregarIndividuoPoblacion(Individuo individuo){}
     
-    public Individuo crearIndividuoAlAzar()
+    public Individuo crearIndividuoAlAzar() throws SQLException
     {
         Individuo individuo = new Individuo(-1, new Arbol());
         // basado en restricciones generar individuo al azar
-        /*
-        *
-        *
-        *
-        */
+        Connection miConexion;
+        miConexion =  ConexionDB.GetConnection();
+        Statement st = miConexion.createStatement();
+        if(miConexion==null)
+        {
+            System.out.println("Conexión No Realizada Correctamente");
+        }
+        
+        ResultSet queryHorario = st.executeQuery("SELECT * FROM horario");
+        queryHorario.next();
+        
+        int id_nodo_padre = (int)queryHorario.getObject("id");
+        Nodo nodo_padre = new Nodo(new Informacion(id_nodo_padre, -1, Parametros.TIPO_NODO_RAIZ), null,null);
+        arbol = new Arbol(nodo_padre);
+        
+        
+        
+        ResultSet queryProfesor = st.executeQuery("SELECT * FROM profesores");
+        int i = 0;
+        while(queryProfesor.next())
+        {
+            
+            if(i == 0)
+            {
+               nodo_padre.setHijo(new Nodo(new Informacion((int)queryProfesor.getObject("id"), -1, Parametros.TIPO_NODO_PROFESOR), null,null));
+            }else{
+                while(nodo_padre.getHijo().tieneHermano())
+                {
+                    
+                }
+                
+               nodo_padre.getHijo().setHermano(new Nodo(new Informacion((int)queryProfesor.getObject("id"), -1, Parametros.TIPO_NODO_PROFESOR), null,null));
+            }
+           i++;
+        }
+            
+       
+        
         return individuo;
     }
     
