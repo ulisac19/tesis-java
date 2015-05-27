@@ -5,8 +5,9 @@ public class Nodo
     private Informacion info;
     private Nodo hermano;
     private Nodo hijo;
-    
-    
+
+    public Nodo() {
+    }
    
 
     public Nodo(Informacion info, Nodo hermano, Nodo hijo) 

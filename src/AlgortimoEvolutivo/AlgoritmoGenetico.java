@@ -35,46 +35,7 @@ public class AlgoritmoGenetico
     
     public Individuo crearIndividuoAlAzar() throws SQLException
     {
-        Individuo individuo = new Individuo(-1, new Arbol());
-        // basado en restricciones generar individuo al azar
-        Connection miConexion;
-        miConexion =  ConexionDB.GetConnection();
-        Statement st = miConexion.createStatement();
-        if(miConexion==null)
-        {
-            System.out.println("Conexión No Realizada Correctamente");
-        }
-        
-        ResultSet queryHorario = st.executeQuery("SELECT * FROM horario");
-        queryHorario.next();
-        
-        int id_nodo_padre = (int)queryHorario.getObject("id");
-        Nodo nodo_padre = new Nodo(new Informacion(id_nodo_padre, -1, Parametros.TIPO_NODO_RAIZ), null,null);
-        arbol = new Arbol(nodo_padre);
-        
-        
-        
-        ResultSet queryProfesor = st.executeQuery("SELECT * FROM profesores");
-        int i = 0;
-        while(queryProfesor.next())
-        {
-            
-            if(i == 0)
-            {
-               nodo_padre.setHijo(new Nodo(new Informacion((int)queryProfesor.getObject("id"), -1, Parametros.TIPO_NODO_PROFESOR), null,null));
-            }else{
-                while(nodo_padre.getHijo().tieneHermano())
-                {
-                    
-                }
-                
-               nodo_padre.getHijo().setHermano(new Nodo(new Informacion((int)queryProfesor.getObject("id"), -1, Parametros.TIPO_NODO_PROFESOR), null,null));
-            }
-           i++;
-        }
-            
-       
-        
+        Individuo individuo = null;
         return individuo;
     }
     
@@ -104,7 +65,7 @@ public class AlgoritmoGenetico
         return false;
     }
     
-    public void iterar()
+    public void iterar() throws SQLException
     {
         Individuo individuoInicial = crearIndividuoAlAzar();        
         marcaTiempoInicio = System.currentTimeMillis() / 1000L;
