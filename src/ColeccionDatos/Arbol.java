@@ -36,48 +36,36 @@ public class Arbol
     public Nodo buscar(Nodo temporal, Nodo buscar) // pre-orden
     {
     Nodo rtn = null;    
+   
         if(temporal.esIgual(buscar))
         {
-            return temporal;
-        }else{
-            if(temporal.tieneHijo()) // tiene hijo
-            {   
-                if(temporal.esIgual(buscar))
-                {
-                    return temporal;
-                }else{
-                    rtn = buscar(temporal.getHijo(), buscar);
-                }
-                
-            }else{                   // si no tiene hijo, buscar en hermanos
-                    if(temporal.tieneHermano())
-                    {
-                        if(temporal.esIgual(buscar))
-                        {
-                            return temporal;
-                        }
-                        rtn = buscar(temporal.getHermano(), buscar);
-                    }else{
-                        return rtn;
-                    }
+            rtn = temporal;
+            return rtn;
+        }
+        
+        while(temporal.tieneHijo() && rtn == null)
+        {
+         temporal = temporal.getHijo();
+            rtn = buscar(temporal, buscar);
+            while(temporal.tieneHermano() && rtn == null )
+            {
+                 temporal = temporal.getHermano();
+                 rtn = buscar(temporal, buscar);
             }
         }
+        
+        
         return rtn;
     }
-    
-    public void insertar_nodo(Nodo nodo)
-    {
-    
-    }
-    
+  
     public void mostrarArbol(Nodo n)
     {
-       System.out.println("Horario\t\t\tProfesor\t\tMateria");
+       System.out.println("\t\t\tHorario\t\t\tProfesor\t\tMateria\t\t\tSalon Hora");
        Arbol.imprimir(n, 0);
     }        
     public static void imprimir(Nodo n, int nivel)        
     {   
-        for (int i = 0; i < nivel; i++) 
+        for (int i = 0; i < n.getInfo().getTipoNodo(); i++) 
             System.out.print("\t\t\t");
         n.getInfo().ImprimirInfo();
         
@@ -88,7 +76,8 @@ public class Arbol
         
         
     }
-    
+
+ 
     public static Arbol cargarArbol() throws SQLException
     {
         Connection miConexion;

@@ -2,10 +2,12 @@ package AlgortimoEvolutivo;
 
 import BaseDatos.ConexionDB;
 import ColeccionDatos.Arbol;
+import ColeccionDatos.BloqueHorario;
 import ColeccionDatos.Informacion;
 import ColeccionDatos.Nodo;
 import ColeccionDatos.Parametros;
 import ColeccionDatos.Rango;
+import ColeccionDatos.Salon;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,6 +24,26 @@ public class AlgoritmoGenetico
     private int iterador;
     private Parametros parametros;
     private Arbol arbol;
+    private Salon salon[];
+    private BloqueHorario bloqueHorario[];
+    private int cantSalones;
+    private int cantBloques;
+
+    public int getCantSalones() {
+        return cantSalones;
+    }
+
+    public void setCantSalones(int cantSalones) {
+        this.cantSalones = cantSalones;
+    }
+
+    public int getCantBloques() {
+        return cantBloques;
+    }
+
+    public void setCantBloques(int cantBloques) {
+        this.cantBloques = cantBloques;
+    }
    
     
     public AlgoritmoGenetico(Parametros parametros){
@@ -65,6 +87,70 @@ public class AlgoritmoGenetico
         return false;
     }
     
+    private void cargarSalones() throws SQLException
+    {   
+        int i = 0, id, tipoSalon_id;
+        String nombre;
+        Connection miConexion;
+        miConexion =  ConexionDB.GetConnection();
+        Statement st = miConexion.createStatement();
+        if(miConexion==null)
+        {
+            System.out.println("Conexión No Realizada Correctamente");
+            return;
+        }
+        
+        ResultSet querySalon = st.executeQuery("SELECT * FROM bloquehorario");
+       
+        while(querySalon.next())
+            i++;
+        setCantSalones(i);
+        salon = new Salon[getCantSalones()];
+        querySalon = st.executeQuery("SELECT * FROM salon");
+        i = 0;
+        while(querySalon.next())
+        {
+            id = (int)(querySalon.getObject("id"));
+            nombre =  (String)(querySalon.getObject("nombre"));
+            tipoSalon_id =  (int)(querySalon.getObject("tipoSalon_id")); 
+            salon[i] = new Salon(id,nombre , tipoSalon_id);
+        i++;
+        }
+    }
+    
+    private void cargarBloqueHorario() throws SQLException
+    {   
+        int i = 0, id, id_horaInicio, id_horaFin, id_dia;
+        
+        Connection miConexion;
+        miConexion =  ConexionDB.GetConnection();
+        Statement st = miConexion.createStatement();
+        if(miConexion==null)
+        {
+            System.out.println("Conexión No Realizada Correctamente");
+            return;
+        }
+        
+        ResultSet queryBloqueHorario = st.executeQuery("SELECT * FROM bloquehorario");
+       
+        while(queryBloqueHorario.next())
+            i++;
+        setCantBloques(i);
+        bloqueHorario = new BloqueHorario[getCantBloques()];
+        
+        queryBloqueHorario = st.executeQuery("SELECT * FROM bloquehorario");
+        i = 0;
+        while(queryBloqueHorario.next())
+        {
+            id = (int)(queryBloqueHorario.getObject("id"));
+            id_horaInicio =  (int)(queryBloqueHorario.getObject("hora_inicio"));
+            id_horaFin =  (int)(queryBloqueHorario.getObject("hora_fin"));
+            id_dia =  (int)(queryBloqueHorario.getObject("dia_id")); 
+            bloqueHorario[i] = new BloqueHorario(id, id_horaInicio, id_horaFin, id_dia);
+        i++;
+        }
+    }
+    
     public void iterar() throws SQLException
     {
         Individuo individuoInicial = crearIndividuoAlAzar();        
@@ -85,7 +171,7 @@ public class AlgoritmoGenetico
             
             if(idOperadorGenetico.equals(Parametros.ALGORTIMO_GENETICO_ID_CRUCE))
             {
-                //cruzar();
+                
             }
             
             if(idOperadorGenetico.equals(Parametros.ALGORTIMO_GENETICO_ID_BUSQUEDA_TABU))

@@ -16,6 +16,13 @@ public class Nodo
         this.hermano = hermano;    
         this.hijo = hijo;
     }
+    
+    public Nodo(Informacion info) 
+    {
+        this.info = info;
+        this.hermano = null;    
+        this.hijo = null;
+    }
 
 
     public Informacion getInfo() 
@@ -84,7 +91,7 @@ public class Nodo
     
     public boolean esIgual(Nodo nodo)
     {
-        return this.getInfo().getDato1() == nodo.getInfo().getDato1() && this.getInfo().getDato2()== nodo.getInfo().getDato2();
+        return this.getInfo().getDato1() == nodo.getInfo().getDato1() && this.getInfo().getDato2()== nodo.getInfo().getDato2() && this.getInfo().getTipoNodo() == nodo.getInfo().getTipoNodo();
     }
     
     public boolean tieneHijo()
