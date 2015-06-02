@@ -6,22 +6,33 @@ public class Seccion {
     private int materia;
     private int carrera;
     private boolean es_grupo;
-    private boolean semestre;
+    private int semestre;
+    private int tipoMateria;
 
     public Seccion() {
         
     }
     
-    public Seccion(int id, int numero, int materia, int carrera, boolean es_grupo, boolean semestre) {
+    public Seccion(int id, int numero, int materia, int carrera, boolean es_grupo, int semestre, int tipoMateria) {
         this.id = id;
         this.numero = numero;
         this.materia = materia;
         this.carrera = carrera;
         this.es_grupo = es_grupo;
         this.semestre = semestre;
+        this.tipoMateria = tipoMateria; // UC
     }
 
-    public int getId() {
+    public int getTipoMateria() {
+        return tipoMateria;
+    }
+
+    public void setTipoMateria(int tipoMateria) {
+        this.tipoMateria = tipoMateria;
+    }
+
+    public int getId() 
+    {
         return id;
     }
 
@@ -61,11 +72,11 @@ public class Seccion {
         this.es_grupo = es_grupo;
     }
 
-    public boolean isSemestre() {
+    public int isSemestre() {
         return semestre;
     }
 
-    public void setSemestre(boolean semestre) {
+    public void setSemestre(int semestre) {
         this.semestre = semestre;
     }
     

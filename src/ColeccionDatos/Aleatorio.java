@@ -20,8 +20,9 @@ public class Aleatorio {
     }
     
     public int getAleatorio(int min, int max)
-    {
-        return (int)(rnd.nextDouble() * min + max);
+    {int f;
+        f= (int)(rnd.nextDouble() * max + min);
+        return f;
     }
     
 }

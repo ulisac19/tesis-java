@@ -5,7 +5,9 @@ public class BloqueHorario {
     private int id_horaInicio;
     private int id_horaFin;
     private int id_dia;
+    private int canthoras;
 
+  
     public BloqueHorario() {
       
     }
@@ -15,6 +17,11 @@ public class BloqueHorario {
         this.id_horaInicio = id_horaInicio;
         this.id_horaFin = id_horaFin;
         this.id_dia = id_dia;
+        this.canthoras = ( id_horaFin - id_horaInicio );
+    }
+
+    public int getCanthoras() {
+        return canthoras;
     }
 
     public int getId() {

@@ -33,9 +33,10 @@ public class Arbol
         this.raiz = raiz;
     }
     
-    public Nodo buscar(Nodo temporal, Nodo buscar) // pre-orden
+    public Nodo buscar(Nodo temporal, Informacion bus) // pre-orden
     {
     Nodo rtn = null;    
+    Nodo buscar = new Nodo(bus); 
    
         if(temporal.esIgual(buscar))
         {
@@ -46,11 +47,11 @@ public class Arbol
         while(temporal.tieneHijo() && rtn == null)
         {
          temporal = temporal.getHijo();
-            rtn = buscar(temporal, buscar);
+            rtn = buscar(temporal, bus);
             while(temporal.tieneHermano() && rtn == null )
             {
                  temporal = temporal.getHermano();
-                 rtn = buscar(temporal, buscar);
+                 rtn = buscar(temporal, bus);
             }
         }
         

@@ -14,22 +14,21 @@ public class HorariosUniversitarios
     {     
         
         Arbol a = null;
-        Nodo o;
         a = Arbol.cargarArbol();
+      /*  Informacion info;
         a.mostrarArbol(a.getRaiz());
-        Informacion info;
+        Nodo o;
         info = new Informacion(17, -1, Parametros.TIPO_NODO_MATERIA);
         
         o = a.buscar(a.getRaiz(), new Nodo(info));
        
         o.setHermano(new Nodo(new Informacion(7, 7, Parametros.TIPO_NODO_SALON_HORARIO)));
         
-     
-        a.mostrarArbol(a.getRaiz());
+     */
         Parametros p = new Parametros();
-        AlgoritmoGenetico b = new AlgoritmoGenetico(p);
-      
+        AlgoritmoGenetico b = new AlgoritmoGenetico(p, a);
+        b.crearIndividuoAlAzar();
+        a.mostrarArbol(a.getRaiz());
     }
-    
-    
+
 }

@@ -1,13 +1,16 @@
 package AlgortimoEvolutivo;
 
 import BaseDatos.ConexionDB;
+import ColeccionDatos.Aleatorio;
 import ColeccionDatos.Arbol;
 import ColeccionDatos.BloqueHorario;
 import ColeccionDatos.Informacion;
+import ColeccionDatos.Materia;
 import ColeccionDatos.Nodo;
 import ColeccionDatos.Parametros;
 import ColeccionDatos.Rango;
 import ColeccionDatos.Salon;
+import ColeccionDatos.Seccion;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,7 +18,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class AlgoritmoGenetico 
+public final class AlgoritmoGenetico 
 { 
     private ArrayList<Individuo> poblacion;
     private ArrayList<Individuo> listaElite;
@@ -24,11 +27,24 @@ public class AlgoritmoGenetico
     private int iterador;
     private Parametros parametros;
     private Arbol arbol;
+    private Seccion materia[];
     private Salon salon[];
     private BloqueHorario bloqueHorario[];
     private int cantSalones;
     private int cantBloques;
 
+     public AlgoritmoGenetico(Parametros parametros, Arbol arbol) throws SQLException{
+        poblacion = new ArrayList<>();
+        listaElite = new ArrayList<>();
+        iterador = 0;
+        this.parametros = parametros;
+        this.arbol = arbol;
+        cargarSalones();
+        cargarBloqueHorario();
+        cargarMaterias();
+        
+    }
+     
     public int getCantSalones() {
         return cantSalones;
     }
@@ -46,18 +62,86 @@ public class AlgoritmoGenetico
     }
    
     
-    public AlgoritmoGenetico(Parametros parametros){
-        poblacion = new ArrayList<>();
-        listaElite = new ArrayList<>();
-        iterador = 0;
-        this.parametros = parametros;
-    }
+   
     
     public void agregarIndividuoPoblacion(Individuo individuo){}
+    
+    public void cargarMaterias() throws SQLException
+    {   
+        Connection miConexion;
+        miConexion =  ConexionDB.GetConnection();
+        Statement st = miConexion.createStatement();
+        ResultSet queryMateria = st.executeQuery("SELECT * FROM seccion"),queryMateria2 ;
+        
+        int i = 0, j = 0;
+        boolean grupo;
+        while (queryMateria.next()) 
+            i++;
+
+        materia = new Seccion[i];
+      
+        queryMateria2 = st.executeQuery("SELECT * FROM seccion, materia where materia.id = seccion.materia_id");
+        while (queryMateria2.next()) 
+        {
+            int gr = (int)queryMateria2.getObject("seccion.es_grupo");
+            grupo = gr == 1;
+            int id = (int)queryMateria2.getObject("seccion.id");
+            int numero =(int)queryMateria2.getObject("seccion.numero");
+            int materia_id = (int)queryMateria2.getObject("seccion.materia_id");
+            int carrera = (int)queryMateria2.getObject("seccion.carrera_id");
+            int semestre = (int)queryMateria2.getObject("seccion.semestre");
+            int tipoMateria = (int)queryMateria2.getObject("materia.unidades_credito");
+            materia[j] = new Seccion(id, numero, materia_id, carrera, grupo, semestre, tipoMateria);  
+         j++;   
+        }
+       
+        
+    }
     
     public Individuo crearIndividuoAlAzar() throws SQLException
     {
         Individuo individuo = null;
+        Aleatorio rnd = new Aleatorio(); 
+        int idsalon, idbloque, cantbloque = -1;
+        Nodo aux, padre_aux;
+        
+        /* Recorrer materias para asignares horarios y salon */
+        for (int i = 0; i < materia.length; i++) 
+        {
+            /* obtener nodo materia */
+            padre_aux = arbol.buscar(arbol.getRaiz(), new Informacion(materia[i].getId(), -1, Parametros.TIPO_NODO_MATERIA));
+            
+            if(materia[i].getTipoMateria() == 1)
+            {
+                cantbloque = 1;
+            }
+            
+            if(materia[i].getTipoMateria() == 2)
+            {
+                cantbloque = 1;
+            } 
+            
+            if(materia[i].getTipoMateria() == 3)
+            {
+                cantbloque = 2;
+            } 
+            
+            if(materia[i].getTipoMateria() == 4)
+            {
+                cantbloque = 2;
+            } 
+            
+            for (int j = 0; j < cantbloque; j++) 
+            {
+                idsalon = rnd.getAleatorio(1, this.salon.length); 
+                idbloque = rnd.getAleatorio(1, bloqueHorario.length);  
+                aux = new Nodo(new Informacion(idsalon, idbloque, Parametros.TIPO_NODO_SALON_HORARIO));
+                padre_aux.setHijo(aux);
+            }
+            
+            
+        }
+        
         return individuo;
     }
     
@@ -100,7 +184,7 @@ public class AlgoritmoGenetico
             return;
         }
         
-        ResultSet querySalon = st.executeQuery("SELECT * FROM bloquehorario");
+        ResultSet querySalon = st.executeQuery("SELECT * FROM salon");
        
         while(querySalon.next())
             i++;
@@ -224,5 +308,6 @@ public class AlgoritmoGenetico
     return rsp;      
     }
     
+   
     
 }
