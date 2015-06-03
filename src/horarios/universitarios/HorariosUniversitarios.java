@@ -28,7 +28,8 @@ public class HorariosUniversitarios
         Parametros p = new Parametros();
         AlgoritmoGenetico b = new AlgoritmoGenetico(p, a);
         b.crearIndividuoAlAzar();
-        a.mostrarArbol(a.getRaiz());
+       // a.mostrarArbol(a.getRaiz());
+        
     }
 
 }

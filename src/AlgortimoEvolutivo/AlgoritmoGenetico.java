@@ -30,6 +30,7 @@ public final class AlgoritmoGenetico
     private Seccion materia[];
     private Salon salon[];
     private BloqueHorario bloqueHorario[];
+ 
     private int cantSalones;
     private int cantBloques;
 
@@ -102,48 +103,144 @@ public final class AlgoritmoGenetico
     {
         Individuo individuo = null;
         Aleatorio rnd = new Aleatorio(); 
-        int idsalon, idbloque, cantbloque = -1;
+        int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
+        int  bloq1 = 0, bloq2 = 0, bloq3 = 0, tamBloq;
         Nodo aux, padre_aux;
+        boolean bandera;
         
         /* Recorrer materias para asignares horarios y salon */
         for (int i = 0; i < materia.length; i++) 
         {
+        bandera = true;
             /* obtener nodo materia */
             padre_aux = arbol.buscar(arbol.getRaiz(), new Informacion(materia[i].getId(), -1, Parametros.TIPO_NODO_MATERIA));
             
             if(materia[i].getTipoMateria() == 1)
             {
                 cantbloque = 1;
+                bloq1 = 2;
+                bloq2 = 0;
+                bloq3 = 0;
+                
             }
             
             if(materia[i].getTipoMateria() == 2)
             {
                 cantbloque = 1;
+                bloq1 = 3;
+                bloq2 = 0;
+                bloq3 = 0;
             } 
             
             if(materia[i].getTipoMateria() == 3)
             {
                 cantbloque = 2;
+                bloq1 = 2;
+                bloq2 = 3;
+                bloq3 = 0;
             } 
             
             if(materia[i].getTipoMateria() == 4)
             {
-                cantbloque = 2;
+                cantbloque = 3;
+                bloq1 = 2;
+                bloq2 = 2;
+                bloq3 = 2;
             } 
-            
+            System.out.println("Tipo materia: "+ materia[i].getTipoMateria());
             for (int j = 0; j < cantbloque; j++) 
             {
-                idsalon = rnd.getAleatorio(1, this.salon.length); 
-                idbloque = rnd.getAleatorio(1, bloqueHorario.length);  
-                aux = new Nodo(new Informacion(idsalon, idbloque, Parametros.TIPO_NODO_SALON_HORARIO));
-                padre_aux.setHijo(aux);
+                // elegir salon
+                idsalon = rnd.getAleatorio(1, this.salon.length);
+                
+                //elegir dia
+                if(j == 1)
+                    iddiaAnterior = iddia;
+                if(j == 2 && bandera)
+                {
+                    iddiaTrasAnterior = iddiaAnterior;
+                    iddiaAnterior = iddia;
+                }
+                iddia = rnd.getAleatorio(1, 5);
+                
+                if(materia[i].getTipoMateria() == 2 || materia[i].getTipoMateria() == 3 || materia[i].getTipoMateria() == 4)
+                {
+                    if(j == 1 && iddia == iddiaAnterior)
+                    {
+                        j--;
+                        continue;
+                    }
+                    
+                }
+                
+                if(materia[i].getTipoMateria() == 4)
+                {                    
+                    if(j == 2 && (iddia == iddiaAnterior || iddia == iddiaTrasAnterior) )
+                    {
+                        bandera = false;
+                        j--;
+                        continue;
+                    }
+                    
+                }
+                
+                //elegir bloque                
+                
+                
+                
             }
+            
+            for (int k = 0; k < cantbloque; k++) 
+            {
+                int auxD = 0;
+                idbloque = rnd.getAleatorio(1, 36);
+                tamBloq = bloqueHorario[idbloque-1].getId_horaFin() - bloqueHorario[idbloque-1].getId_horaInicio() + 1;
+                
+                if(iddia != -1 && k == 0)
+                {
+                    if(tamBloq != bloq1 && bloq1 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddia;
+                }
+
+                if(iddiaAnterior != -1 && k == 1)
+                {
+                    if(tamBloq != bloq2 && bloq2 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddiaAnterior;
+                }
+
+                if(iddiaTrasAnterior != -1 && k == 2)
+                {
+                    if(tamBloq != bloq3 && bloq3 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddiaTrasAnterior;
+                }
+                System.out.println("\tTamaño bloque:\t\t"+tamBloq);
+            aux = new Nodo(new Informacion(auxD, idbloque + ((auxD -1) *36), Parametros.TIPO_NODO_SALON_HORARIO));
+            padre_aux.setHijo(aux); 
+                
+            }
+            
+            iddia = iddiaAnterior = iddiaTrasAnterior = -1;
+            
             
             
         }
         
         return individuo;
     }
+    
+   
     
     public void mutar(Individuo individuo){}
     public void cruzar(Individuo individuo1, Individuo individuo2)
@@ -308,6 +405,7 @@ public final class AlgoritmoGenetico
     return rsp;      
     }
     
+   
    
     
 }
