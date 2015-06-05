@@ -56,4 +56,30 @@ public class BloqueHorario {
         this.id_dia = id_dia;
     }
     
+    public static int choque(BloqueHorario bloque1, BloqueHorario bloque2)
+    {
+        int rtn  = 0;
+        if(bloque1.getId_dia() != bloque2.getId_dia())
+            return 0;
+        
+        if(bloque1.getId_horaFin() < bloque2.getId_horaInicio() || bloque2.getId_horaFin() < bloque1.getId_horaInicio() )
+            return 0;
+        
+        // si chocan y uno menor que dos
+        if(bloque2.getId_horaInicio() >= bloque1.getId_horaInicio() && bloque2.getId_horaInicio() <= bloque1.getId_horaFin() )
+            return bloque1.getId_horaFin() - bloque2.getId_horaInicio() + 1;
+        
+        
+        // si chocan y dos menor que uno
+        if(bloque1.getId_horaInicio() >= bloque2.getId_horaInicio() && bloque1.getId_horaInicio() <= bloque2.getId_horaFin() )
+            return bloque2.getId_horaFin() - bloque1.getId_horaInicio() + 1;
+        
+        return rtn;
+    }
+    
+    public void imprimir()
+    {
+        System.out.println(getId()+":("+ getId_horaInicio()+","+getId_horaFin()+")"+"["+getId_dia()+"]");
+    }
+    
 }

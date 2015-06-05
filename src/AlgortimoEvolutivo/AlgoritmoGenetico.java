@@ -147,7 +147,7 @@ public final class AlgoritmoGenetico
                 bloq2 = 2;
                 bloq3 = 2;
             } 
-            System.out.println("Tipo materia: "+ materia[i].getTipoMateria());
+            
             for (int j = 0; j < cantbloque; j++) 
             {
                 // elegir salon
@@ -225,7 +225,7 @@ public final class AlgoritmoGenetico
                     }
                     auxD = iddiaTrasAnterior;
                 }
-                System.out.println("\tTamaño bloque:\t\t"+tamBloq);
+                
             aux = new Nodo(new Informacion(auxD, idbloque + ((auxD -1) *36), Parametros.TIPO_NODO_SALON_HORARIO));
             padre_aux.setHijo(aux); 
                 
