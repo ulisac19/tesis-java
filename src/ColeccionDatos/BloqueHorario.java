@@ -59,6 +59,10 @@ public class BloqueHorario {
     public static int choque(BloqueHorario bloque1, BloqueHorario bloque2)
     {
         int rtn  = 0;
+        
+        if(bloque1.getId() == bloque2.getId())
+            return bloque1.getCanthoras();
+        
         if(bloque1.getId_dia() != bloque2.getId_dia())
             return 0;
         

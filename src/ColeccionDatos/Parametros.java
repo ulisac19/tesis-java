@@ -18,6 +18,9 @@ public class Parametros {
     static public int ALGORTIMO_GENETICO_ID_CRUCE = 2;
     static public int ALGORTIMO_GENETICO_ID_COPIAR =  5;
     static public int ALGORTIMO_GENETICO_ID_BUSQUEDA_TABU =  3;
+    static public int NUMERO_DIAS = 5;
+    static public int NUMERO_BLOQUES = 36;
+    static public int SEMESTRES = 10;
 
     
     public float ALGORTIMO_GENETICO_PROBABILIDAD_MUTACION;

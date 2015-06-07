@@ -8,6 +8,7 @@ import ColeccionDatos.Informacion;
 import ColeccionDatos.Materia;
 import ColeccionDatos.Nodo;
 import ColeccionDatos.Parametros;
+import static ColeccionDatos.Parametros.*;
 import ColeccionDatos.Rango;
 import ColeccionDatos.Salon;
 import ColeccionDatos.Seccion;
@@ -30,19 +31,22 @@ public final class AlgoritmoGenetico
     private Seccion materia[];
     private Salon salon[];
     private BloqueHorario bloqueHorario[];
- 
+    private BloqueHorario semestreBloquesUsados[][];
+    private boolean diaHoraSalonOcupado[][];
     private int cantSalones;
     private int cantBloques;
 
      public AlgoritmoGenetico(Parametros parametros, Arbol arbol) throws SQLException{
         poblacion = new ArrayList<>();
         listaElite = new ArrayList<>();
+        semestreBloquesUsados = new BloqueHorario[SEMESTRES][NUMERO_DIAS * NUMERO_BLOQUES];
         iterador = 0;
         this.parametros = parametros;
         this.arbol = arbol;
         cargarSalones();
         cargarBloqueHorario();
         cargarMaterias();
+        cargarVectorOcupados();
         
     }
      
@@ -92,7 +96,8 @@ public final class AlgoritmoGenetico
             int carrera = (int)queryMateria2.getObject("seccion.carrera_id");
             int semestre = (int)queryMateria2.getObject("seccion.semestre");
             int tipoMateria = (int)queryMateria2.getObject("materia.unidades_credito");
-            materia[j] = new Seccion(id, numero, materia_id, carrera, grupo, semestre, tipoMateria);  
+            int laboratorio = (int)queryMateria2.getObject("materia.requiere_laboratorio");            
+            materia[j] = new Seccion(id, numero, materia_id, carrera, grupo, semestre, tipoMateria, laboratorio);  
          j++;   
         }
        
@@ -111,7 +116,7 @@ public final class AlgoritmoGenetico
         /* Recorrer materias para asignares horarios y salon */
         for (int i = 0; i < materia.length; i++) 
         {
-        bandera = true;
+            bandera = true;
             /* obtener nodo materia */
             padre_aux = arbol.buscar(arbol.getRaiz(), new Informacion(materia[i].getId(), -1, Parametros.TIPO_NODO_MATERIA));
             
@@ -150,8 +155,6 @@ public final class AlgoritmoGenetico
             
             for (int j = 0; j < cantbloque; j++) 
             {
-                // elegir salon
-                idsalon = rnd.getAleatorio(1, this.salon.length);
                 
                 //elegir dia
                 if(j == 1)
@@ -182,19 +185,18 @@ public final class AlgoritmoGenetico
                         continue;
                     }
                     
-                }
-                
-                //elegir bloque                
-                
+                }                
+               
                 
                 
             }
             
+            boolean ingresoLaboratorio = false;
             for (int k = 0; k < cantbloque; k++) 
             {
-                int auxD = 0;
-                idbloque = rnd.getAleatorio(1, 36);
-                tamBloq = bloqueHorario[idbloque-1].getId_horaFin() - bloqueHorario[idbloque-1].getId_horaInicio() + 1;
+                int auxD = 0, idbloquefinal;
+                idbloque = rnd.getAleatorio(1, NUMERO_BLOQUES);
+                tamBloq = bloqueHorario[idbloque].getId_horaFin() - bloqueHorario[idbloque].getId_horaInicio() + 1;
                 
                 if(iddia != -1 && k == 0)
                 {
@@ -226,9 +228,35 @@ public final class AlgoritmoGenetico
                     auxD = iddiaTrasAnterior;
                 }
                 
-            aux = new Nodo(new Informacion(auxD, idbloque + ((auxD -1) *36), Parametros.TIPO_NODO_SALON_HORARIO));
-            padre_aux.setHijo(aux); 
-                
+                    
+                    idsalon = rnd.getAleatorio(1, salon.length - 1);
+                    
+                    if(materia[i].getLaboratorio() == 2 && !ingresoLaboratorio)// requiere laboratorio
+                    {
+                        if(salon[idsalon].getTipoSalon() != 2)
+                        {
+                            k--;
+                            continue;
+                        }else{
+                            ingresoLaboratorio = true;
+                        }
+                    }
+                    
+                    idbloquefinal = idbloque + ((auxD -1) * NUMERO_BLOQUES);
+
+                    if(!diaHoraSalonOcupado[idsalon][idbloquefinal] && perimetroLibre(idsalon, idbloquefinal))
+                    {
+                        aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
+                        padre_aux.setHijo(aux); 
+                        diaHoraSalonOcupado[idsalon][idbloquefinal] = true;
+                        semestreBloquesUsados[materia[i].getSemestre()][idbloquefinal] = bloqueHorario[idbloquefinal];
+                    }else{
+                        k--;
+                        continue;
+                    }
+                 
+                       
+                    
             }
             
             iddia = iddiaAnterior = iddiaTrasAnterior = -1;
@@ -236,11 +264,55 @@ public final class AlgoritmoGenetico
             
             
         }
-        
+        individuo = new Individuo(funcionObjetivo(), arbol);
         return individuo;
     }
     
-   
+    public int funcionObjetivo()
+    {
+    int rtn = 0;
+        for (int i = 0; i < SEMESTRES ; i++) 
+        {           
+            for (int j = 0; j < ( NUMERO_BLOQUES * NUMERO_DIAS )- 1 ; j++) 
+            {
+                if(semestreBloquesUsados[i][j] != null)
+                    
+                    for (int k = j; k < ( NUMERO_BLOQUES * NUMERO_DIAS ) -1; k++) 
+                    { 
+                        if(k != j && semestreBloquesUsados[i][k] != null)                        
+                        {  
+                            rtn = rtn + BloqueHorario.choque(semestreBloquesUsados[i][j], semestreBloquesUsados[i][k]);
+                        }
+                    }
+            }
+            
+        }
+        return rtn;
+    }
+    
+    private boolean perimetroLibre(int idsalon, int idbloque) throws SQLException
+    {
+        Connection miConexion;
+        miConexion =  ConexionDB.GetConnection();
+        Statement st = miConexion.createStatement();
+        int idaux;
+        boolean band = true; 
+        String sql = "SELECT * "
+                   + "FROM bloquehorario "
+                   + "WHERE "
+                        + "dia_id = "+bloqueHorario[idbloque].getId_dia()+" AND ("+
+                          "(hora_inicio >= " + bloqueHorario[idbloque].getId_horaInicio() + " AND  hora_inicio <=" + bloqueHorario[idbloque].getId_horaFin()+" ) OR ( "+
+                          "hora_fin >= " + bloqueHorario[idbloque].getId_horaInicio() + " AND  hora_fin <=" + bloqueHorario[idbloque].getId_horaFin()+ "))";
+        
+        ResultSet queryMateria = st.executeQuery(sql);
+        
+        while(band && queryMateria.next())
+        {
+            idaux = (int)queryMateria.getObject("id");
+            band = band || !diaHoraSalonOcupado[idsalon][idaux];               
+        }
+        return band; 
+    }
     
     public void mutar(Individuo individuo){}
     public void cruzar(Individuo individuo1, Individuo individuo2)
@@ -251,6 +323,18 @@ public final class AlgoritmoGenetico
     public void selecccionar(ArrayList<Individuo> poblacion, ArrayList<Individuo> listaElite)
     {
         
+    }
+    
+    private void cargarVectorOcupados()
+    {
+    this.diaHoraSalonOcupado = new boolean[salon.length + 1][(NUMERO_BLOQUES * NUMERO_DIAS) + 1];
+        for (int i = 0; i <= salon.length; i++) 
+            for (int j = 0; j <= NUMERO_BLOQUES * NUMERO_DIAS; j++) 
+                diaHoraSalonOcupado[i][j] = false;
+        
+        for (int i = 0; i < SEMESTRES; i++) 
+            for (int j = 0; j < NUMERO_BLOQUES * NUMERO_DIAS; j++)
+                semestreBloquesUsados[i][j] = null;
     }
     
     public boolean maximoIteraciones(int iteraciones)
@@ -267,6 +351,8 @@ public final class AlgoritmoGenetico
     {
         return false;
     }
+    
+    
     
     private void cargarSalones() throws SQLException
     {   
@@ -285,10 +371,10 @@ public final class AlgoritmoGenetico
        
         while(querySalon.next())
             i++;
-        setCantSalones(i);
+        setCantSalones(1 + i);
         salon = new Salon[getCantSalones()];
         querySalon = st.executeQuery("SELECT * FROM salon");
-        i = 0;
+        i = 1;
         while(querySalon.next())
         {
             id = (int)(querySalon.getObject("id"));
@@ -316,11 +402,11 @@ public final class AlgoritmoGenetico
        
         while(queryBloqueHorario.next())
             i++;
-        setCantBloques(i);
+        setCantBloques(1+i);
         bloqueHorario = new BloqueHorario[getCantBloques()];
         
         queryBloqueHorario = st.executeQuery("SELECT * FROM bloquehorario");
-        i = 0;
+        i = 1;
         while(queryBloqueHorario.next())
         {
             id = (int)(queryBloqueHorario.getObject("id"));
@@ -345,17 +431,17 @@ public final class AlgoritmoGenetico
             /* Seleccionar operador genetico a aplicar */
             idOperadorGenetico = probabilidades();
             
-            if(idOperadorGenetico.equals(Parametros.ALGORTIMO_GENETICO_ID_MUTACION))
+            if(idOperadorGenetico.equals(ALGORTIMO_GENETICO_ID_MUTACION))
             {
                 mutar(poblacion.get(iterador));
             }
             
-            if(idOperadorGenetico.equals(Parametros.ALGORTIMO_GENETICO_ID_CRUCE))
+            if(idOperadorGenetico.equals(ALGORTIMO_GENETICO_ID_CRUCE))
             {
                 
             }
             
-            if(idOperadorGenetico.equals(Parametros.ALGORTIMO_GENETICO_ID_BUSQUEDA_TABU))
+            if(idOperadorGenetico.equals(ALGORTIMO_GENETICO_ID_BUSQUEDA_TABU))
             {
             }
             
@@ -372,7 +458,7 @@ public final class AlgoritmoGenetico
         Random rn = new Random();
         int numeroAlazar = rn.nextInt(100) + 1;
         int a, b;
-        int rsp = Parametros.ALGORTIMO_GENETICO_ID_COPIAR;
+        int rsp = ALGORTIMO_GENETICO_ID_COPIAR;
         
         Rango mutacion = new Rango();
         Rango cruce = new Rango();

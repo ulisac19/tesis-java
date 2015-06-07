@@ -8,12 +8,13 @@ public class Seccion {
     private boolean es_grupo;
     private int semestre;
     private int tipoMateria;
+    private int laboratorio;
 
     public Seccion() {
         
     }
     
-    public Seccion(int id, int numero, int materia, int carrera, boolean es_grupo, int semestre, int tipoMateria) {
+    public Seccion(int id, int numero, int materia, int carrera, boolean es_grupo, int semestre, int tipoMateria, int laboratorio) {
         this.id = id;
         this.numero = numero;
         this.materia = materia;
@@ -21,10 +22,19 @@ public class Seccion {
         this.es_grupo = es_grupo;
         this.semestre = semestre;
         this.tipoMateria = tipoMateria; // UC
+        this.laboratorio = laboratorio;
     }
 
     public int getTipoMateria() {
         return tipoMateria;
+    }
+
+    public int getLaboratorio() {
+        return laboratorio;
+    }
+
+    public void setLaboratorio(int laboratorio) {
+        this.laboratorio = laboratorio;
     }
 
     public void setTipoMateria(int tipoMateria) {
@@ -78,6 +88,10 @@ public class Seccion {
 
     public void setSemestre(int semestre) {
         this.semestre = semestre;
+    }
+
+    public int getSemestre() {
+        return semestre;
     }
     
     

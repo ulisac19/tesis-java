@@ -11,7 +11,8 @@ public class Informacion {
         this.dato2 = dato2;
         this.tipoNodo = tipoNodo;
     }
-
+    
+  
     
     public Informacion(int dato1) {
         this.dato1 = dato1;
@@ -20,6 +21,7 @@ public class Informacion {
     public Informacion() {
     }
 
+ 
     public int getDato1() 
     {
         return dato1;

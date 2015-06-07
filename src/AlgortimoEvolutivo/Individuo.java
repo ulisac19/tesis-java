@@ -5,14 +5,15 @@ import ColeccionDatos.Arbol;
 
 public class Individuo {
     
+    
     private int valorFuncionObjetivo;
-    private Arbol a;
-
-    public Individuo(int valorFuncionObjetivo, Arbol a) {
+    private Arbol arbol;
+    
+    public Individuo(int valorFuncionObjetivo, Arbol arbol) {
         this.valorFuncionObjetivo = valorFuncionObjetivo;
-        this.a = a;
+        this.arbol = arbol;
     }
-
+    
     public int getValorFuncionObjetivo() {
         return valorFuncionObjetivo;
     }
@@ -21,16 +22,12 @@ public class Individuo {
         this.valorFuncionObjetivo = valorFuncionObjetivo;
     }
 
-    public Arbol getA() {
-        return a;
+    public Arbol getArbol() {
+        return arbol;
     }
 
-    public void setA(Arbol a) {
-        this.a = a;
+    public void setArbol(Arbol arbol) {
+        this.arbol = arbol;
     }
-    
-    public int calculoFuncionObjetivo(){
-        return 1;
-    }
-    
+
 }
