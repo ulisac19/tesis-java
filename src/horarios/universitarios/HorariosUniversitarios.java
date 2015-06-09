@@ -1,6 +1,7 @@
 package horarios.universitarios;
 
 import AlgortimoEvolutivo.AlgoritmoGenetico;
+import AlgortimoEvolutivo.Individuo;
 import BaseDatos.ConexionDB;
 import ColeccionDatos.Arbol;
 import ColeccionDatos.BloqueHorario;
@@ -25,9 +26,12 @@ public class HorariosUniversitarios
         Parametros p = new Parametros();
         
         AlgoritmoGenetico b1 = new AlgoritmoGenetico(p, a1);
-        b1.crearIndividuoAlAzar();
+        // creo un individuo inicial
+        Individuo i = b1.crearIndividuoAlAzar();
         a1.mostrarArbol(a1.getRaiz());
-        System.out.println(b1.funcionObjetivo());
+        b1.mutar(i);
+        a1.mostrarArbol(a1.getRaiz());
+        
  
         
     }

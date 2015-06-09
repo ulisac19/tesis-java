@@ -24,7 +24,11 @@ public class Nodo
         this.hijo = null;
     }
 
-
+    public void eliminarHijo()
+    {
+        this.hijo = null;
+    }
+    
     public Informacion getInfo() 
     { 
         return info;

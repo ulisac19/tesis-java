@@ -13,14 +13,16 @@ import java.util.Random;
  */
 public class Aleatorio {
     
-    Random rnd ;  
-
+    
+Random rnd;
     public Aleatorio() {
     rnd = new Random();
     }
     
-    public int getAleatorio(int min, int max)
-    {int f;
+    public static int getAleatorio(int min, int max)
+    {
+        Random rnd = new Random();
+        int f;
         f= (int)(rnd.nextDouble() * max + min);
         return f;
     }

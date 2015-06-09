@@ -285,7 +285,7 @@ public final class AlgoritmoGenetico
                         }
                     }
             }
-            
+                
         }
         return rtn;
     }
@@ -314,12 +314,322 @@ public final class AlgoritmoGenetico
         return band; 
     }
     
-    public void mutar(Individuo individuo){}
+    public Individuo mutar(Individuo individuo) throws SQLException
+    {
+        Individuo individuoLocal = individuo;
+        int id_rnd_materia = Aleatorio.getAleatorio(0, materia.length);
+        Arbol arbolLocal = arbol;
+        Nodo n =  arbolLocal.buscar(arbolLocal.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, TIPO_NODO_MATERIA ));
+        int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
+        int  bloq1 = 0, bloq2 = 0, bloq3 = 0, tamBloq;
+        boolean bandera = true;
+        Nodo aux, padre_aux = null;
+        n.getInfo().ImprimirInfo();
+        
+        padre_aux = arbolLocal.buscar(arbolLocal.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, Parametros.TIPO_NODO_MATERIA));
+        padre_aux.eliminarHijo();
+        
+        if(materia[id_rnd_materia].getTipoMateria() == 1)
+            {
+                cantbloque = 1;
+                bloq1 = 2;
+                bloq2 = 0;
+                bloq3 = 0;
+                
+            }
+            
+            if(materia[id_rnd_materia].getTipoMateria() == 2)
+            {
+                cantbloque = 1;
+                bloq1 = 3;
+                bloq2 = 0;
+                bloq3 = 0;
+            } 
+            
+            if(materia[id_rnd_materia].getTipoMateria() == 3)
+            {
+                cantbloque = 2;
+                bloq1 = 2;
+                bloq2 = 3;
+                bloq3 = 0;
+            } 
+            
+            if(materia[id_rnd_materia].getTipoMateria() == 4)
+            {
+                cantbloque = 3;
+                bloq1 = 2;
+                bloq2 = 2;
+                bloq3 = 2;
+            } 
+            
+            for (int j = 0; j < cantbloque; j++) 
+            {
+                
+                //elegir dia
+                if(j == 1)
+                    iddiaAnterior = iddia;
+                if(j == 2 && bandera)
+                {
+                    iddiaTrasAnterior = iddiaAnterior;
+                    iddiaAnterior = iddia;
+                }
+                iddia = Aleatorio.getAleatorio(1, NUMERO_DIAS);
+                
+                if(materia[id_rnd_materia].getTipoMateria() == 2 || materia[id_rnd_materia].getTipoMateria() == 3 || materia[id_rnd_materia].getTipoMateria() == 4)
+                {
+                    if(j == 1 && iddia == iddiaAnterior)
+                    {
+                        j--;
+                        continue;
+                    }
+                    
+                }
+                
+                if(materia[id_rnd_materia].getTipoMateria() == 4)
+                {                    
+                    if(j == 2 && (iddia == iddiaAnterior || iddia == iddiaTrasAnterior) )
+                    {
+                        bandera = false;
+                        j--;
+                        continue;
+                    }
+                    
+                }                
+               
+                
+                
+            }
+            
+            boolean ingresoLaboratorio = false;
+            for (int k = 0; k < cantbloque; k++) 
+            {
+                int auxD = 0, idbloquefinal;
+                idbloque = Aleatorio.getAleatorio(1, NUMERO_BLOQUES);
+                tamBloq = bloqueHorario[idbloque].getId_horaFin() - bloqueHorario[idbloque].getId_horaInicio() + 1;
+                
+                if(iddia != -1 && k == 0)
+                {
+                    if(tamBloq != bloq1 && bloq1 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddia;
+                }
+
+                if(iddiaAnterior != -1 && k == 1)
+                {
+                    if(tamBloq != bloq2 && bloq2 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddiaAnterior;
+                }
+
+                if(iddiaTrasAnterior != -1 && k == 2)
+                {
+                    if(tamBloq != bloq3 && bloq3 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddiaTrasAnterior;
+                }
+                
+                    
+                    idsalon = Aleatorio.getAleatorio(1, salon.length - 1);
+                    
+                    if(materia[id_rnd_materia].getLaboratorio() == 2 && !ingresoLaboratorio)// requiere laboratorio
+                    {
+                        if(salon[idsalon].getTipoSalon() != 2)
+                        {
+                            k--;
+                            continue;
+                        }else{
+                            ingresoLaboratorio = true;
+                        }
+                    }
+                    
+                    idbloquefinal = idbloque + ((auxD -1) * NUMERO_BLOQUES);
+
+                    if(!diaHoraSalonOcupado[idsalon][idbloquefinal] && perimetroLibre(idsalon, idbloquefinal))
+                    {
+                        aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
+                        padre_aux.setHijo(aux); 
+                        diaHoraSalonOcupado[idsalon][idbloquefinal] = true;
+                        semestreBloquesUsados[materia[id_rnd_materia].getSemestre()][idbloquefinal] = bloqueHorario[idbloquefinal];
+                    }else{
+                        k--;
+                        continue;
+                    }
+                 
+                       
+                    
+            }
+            
+            iddia = iddiaAnterior = iddiaTrasAnterior = -1;
+            
+        return individuoLocal;
+    }
+    /*
     public void cruzar(Individuo individuo1, Individuo individuo2)
     {
-    
+        Individuo individuoGenerado = individuo1;
+        individuoGenerado.getArbol();
+        int id_rnd_materia = Aleatorio.getAleatorio(0, materia.length);
+        Nodo n =  arbol.buscar(arbol.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, TIPO_NODO_MATERIA ));
+        int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
+        int  bloq1 = 0, bloq2 = 0, bloq3 = 0, tamBloq;
+        boolean bandera = true;
+        Nodo aux, padre_aux = null;
+        n.getInfo().ImprimirInfo();
+        
+        padre_aux = arbol.buscar(arbol.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, Parametros.TIPO_NODO_MATERIA));
+        padre_aux.eliminarHijo();
+        
+        if(materia[id_rnd_materia].getTipoMateria() == 1)
+            {
+                cantbloque = 1;
+                bloq1 = 2;
+                bloq2 = 0;
+                bloq3 = 0;
+                
+            }
+            
+            if(materia[id_rnd_materia].getTipoMateria() == 2)
+            {
+                cantbloque = 1;
+                bloq1 = 3;
+                bloq2 = 0;
+                bloq3 = 0;
+            } 
+            
+            if(materia[id_rnd_materia].getTipoMateria() == 3)
+            {
+                cantbloque = 2;
+                bloq1 = 2;
+                bloq2 = 3;
+                bloq3 = 0;
+            } 
+            
+            if(materia[id_rnd_materia].getTipoMateria() == 4)
+            {
+                cantbloque = 3;
+                bloq1 = 2;
+                bloq2 = 2;
+                bloq3 = 2;
+            } 
+            
+            for (int j = 0; j < cantbloque; j++) 
+            {
+                
+                //elegir dia
+                if(j == 1)
+                    iddiaAnterior = iddia;
+                if(j == 2 && bandera)
+                {
+                    iddiaTrasAnterior = iddiaAnterior;
+                    iddiaAnterior = iddia;
+                }
+                iddia = Aleatorio.getAleatorio(1, NUMERO_DIAS);
+                
+                if(materia[id_rnd_materia].getTipoMateria() == 2 || materia[id_rnd_materia].getTipoMateria() == 3 || materia[id_rnd_materia].getTipoMateria() == 4)
+                {
+                    if(j == 1 && iddia == iddiaAnterior)
+                    {
+                        j--;
+                        continue;
+                    }
+                    
+                }
+                
+                if(materia[id_rnd_materia].getTipoMateria() == 4)
+                {                    
+                    if(j == 2 && (iddia == iddiaAnterior || iddia == iddiaTrasAnterior) )
+                    {
+                        bandera = false;
+                        j--;
+                        continue;
+                    }
+                    
+                }                
+               
+                
+                
+            }
+            
+            boolean ingresoLaboratorio = false;
+            for (int k = 0; k < cantbloque; k++) 
+            {
+                int auxD = 0, idbloquefinal;
+                idbloque = Aleatorio.getAleatorio(1, NUMERO_BLOQUES);
+                tamBloq = bloqueHorario[idbloque].getId_horaFin() - bloqueHorario[idbloque].getId_horaInicio() + 1;
+                
+                if(iddia != -1 && k == 0)
+                {
+                    if(tamBloq != bloq1 && bloq1 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddia;
+                }
+
+                if(iddiaAnterior != -1 && k == 1)
+                {
+                    if(tamBloq != bloq2 && bloq2 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddiaAnterior;
+                }
+
+                if(iddiaTrasAnterior != -1 && k == 2)
+                {
+                    if(tamBloq != bloq3 && bloq3 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddiaTrasAnterior;
+                }
+                
+                    
+                    idsalon = Aleatorio.getAleatorio(1, salon.length - 1);
+                    
+                    if(materia[id_rnd_materia].getLaboratorio() == 2 && !ingresoLaboratorio)// requiere laboratorio
+                    {
+                        if(salon[idsalon].getTipoSalon() != 2)
+                        {
+                            k--;
+                            continue;
+                        }else{
+                            ingresoLaboratorio = true;
+                        }
+                    }
+                    
+                    idbloquefinal = idbloque + ((auxD -1) * NUMERO_BLOQUES);
+
+                    if(!diaHoraSalonOcupado[idsalon][idbloquefinal] && perimetroLibre(idsalon, idbloquefinal))
+                    {
+                        aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
+                        padre_aux.setHijo(aux); 
+                        diaHoraSalonOcupado[idsalon][idbloquefinal] = true;
+                        semestreBloquesUsados[materia[id_rnd_materia].getSemestre()][idbloquefinal] = bloqueHorario[idbloquefinal];
+                    }else{
+                        k--;
+                        continue;
+                    }
+                 
+                       
+                    
+            }
+            
+            iddia = iddiaAnterior = iddiaTrasAnterior = -1;
     }
-    
+    */
     public void selecccionar(ArrayList<Individuo> poblacion, ArrayList<Individuo> listaElite)
     {
         
