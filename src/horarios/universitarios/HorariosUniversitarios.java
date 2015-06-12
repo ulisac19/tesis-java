@@ -20,19 +20,26 @@ public class HorariosUniversitarios
     {     
         
         Arbol a1  = null;
+        Arbol a2  = null;
        
-        a1 = Arbol.cargarArbol();
-    
+        a1 = a2 = Arbol.cargarArbol();
+        Individuo i = new Individuo(a2);
+        
         Parametros p = new Parametros();
         
-        AlgoritmoGenetico b1 = new AlgoritmoGenetico(p, a1);
-        // creo un individuo inicial
-        Individuo i = b1.crearIndividuoAlAzar();
-        a1.mostrarArbol(a1.getRaiz());
-        b1.mutar(i);
-        a1.mostrarArbol(a1.getRaiz());
+        AlgoritmoGenetico b1 = new AlgoritmoGenetico(p);
         
- 
+        Individuo i1 = b1.crearIndividuoAlAzar(i);
+       /* i1.getArbol().mostrarArbol(i1.getArbol().getRaiz());
+        Individuo i2 = b1.mutar(i1, a1);
+        i1.getArbol().mostrarArbol(i1.getArbol().getRaiz());
+        for (int i = 0; i < 100; i++)
+        i2 = b1.mutar(i2, a1);
+        
+        i2.getArbol().mostrarArbol(i2.getArbol().getRaiz());
+        
+        b1.cruzar(i1, i2);
+        */
         
     }
 

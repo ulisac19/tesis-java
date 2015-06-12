@@ -27,26 +27,23 @@ public final class AlgoritmoGenetico
     private long marcaTiempoInicio;
     private int iterador;
     private Parametros parametros;
-    private Arbol arbol;
+    //private Arbol arbol;
     private Seccion materia[];
     private Salon salon[];
     private BloqueHorario bloqueHorario[];
-    private BloqueHorario semestreBloquesUsados[][];
-    private boolean diaHoraSalonOcupado[][];
     private int cantSalones;
     private int cantBloques;
 
-     public AlgoritmoGenetico(Parametros parametros, Arbol arbol) throws SQLException{
+     public AlgoritmoGenetico(Parametros parametro) throws SQLException{
         poblacion = new ArrayList<>();
         listaElite = new ArrayList<>();
-        semestreBloquesUsados = new BloqueHorario[SEMESTRES][NUMERO_DIAS * NUMERO_BLOQUES];
+        
         iterador = 0;
         this.parametros = parametros;
-        this.arbol = arbol;
         cargarSalones();
         cargarBloqueHorario();
         cargarMaterias();
-        cargarVectorOcupados();
+       // cargarVectorOcupados();
         
     }
      
@@ -104,9 +101,9 @@ public final class AlgoritmoGenetico
         
     }
     
-    public Individuo crearIndividuoAlAzar() throws SQLException
+    public Individuo crearIndividuoAlAzar(Individuo individuo) throws SQLException
     {
-        Individuo individuo = null;
+        Arbol arbol = individuo.getArbol();
         Aleatorio rnd = new Aleatorio(); 
         int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
         int  bloq1 = 0, bloq2 = 0, bloq3 = 0, tamBloq;
@@ -244,12 +241,12 @@ public final class AlgoritmoGenetico
                     
                     idbloquefinal = idbloque + ((auxD -1) * NUMERO_BLOQUES);
 
-                    if(!diaHoraSalonOcupado[idsalon][idbloquefinal] && perimetroLibre(idsalon, idbloquefinal))
+                    if(!individuo.getDiaHoraSalonOcupado(idsalon,idbloquefinal) && perimetroLibre(idsalon, idbloquefinal, individuo))
                     {
                         aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
                         padre_aux.setHijo(aux); 
-                        diaHoraSalonOcupado[idsalon][idbloquefinal] = true;
-                        semestreBloquesUsados[materia[i].getSemestre()][idbloquefinal] = bloqueHorario[idbloquefinal];
+                        individuo.setDiaHoraSalonOcupado(idsalon,idbloquefinal, true);
+                        individuo.setSemestreBloquesUsados(materia[i].getSemestre(), idbloquefinal, bloqueHorario[idbloquefinal]); 
                     }else{
                         k--;
                         continue;
@@ -264,33 +261,12 @@ public final class AlgoritmoGenetico
             
             
         }
-        individuo = new Individuo(funcionObjetivo(), arbol);
-        return individuo;
+        return new Individuo(arbol);
+         
     }
     
-    public int funcionObjetivo()
-    {
-    int rtn = 0;
-        for (int i = 0; i < SEMESTRES ; i++) 
-        {           
-            for (int j = 0; j < ( NUMERO_BLOQUES * NUMERO_DIAS )- 1 ; j++) 
-            {
-                if(semestreBloquesUsados[i][j] != null)
-                    
-                    for (int k = j; k < ( NUMERO_BLOQUES * NUMERO_DIAS ) -1; k++) 
-                    { 
-                        if(k != j && semestreBloquesUsados[i][k] != null)                        
-                        {  
-                            rtn = rtn + BloqueHorario.choque(semestreBloquesUsados[i][j], semestreBloquesUsados[i][k]);
-                        }
-                    }
-            }
-                
-        }
-        return rtn;
-    }
-    
-    private boolean perimetroLibre(int idsalon, int idbloque) throws SQLException
+   
+    private boolean perimetroLibre(int idsalon, int idbloque, Individuo i) throws SQLException
     {
         Connection miConexion;
         miConexion =  ConexionDB.GetConnection();
@@ -309,27 +285,25 @@ public final class AlgoritmoGenetico
         while(band && queryMateria.next())
         {
             idaux = (int)queryMateria.getObject("id");
-            band = band || !diaHoraSalonOcupado[idsalon][idaux];               
+            band = band || ! i.getDiaHoraSalonOcupado(idsalon,idaux);               
         }
         return band; 
     }
     
-    public Individuo mutar(Individuo individuo) throws SQLException
+    public Individuo mutar(Individuo individuo, Arbol arbolLocal) throws SQLException
     {
         Individuo individuoLocal = individuo;
         int id_rnd_materia = Aleatorio.getAleatorio(0, materia.length);
-        Arbol arbolLocal = arbol;
-        Nodo n =  arbolLocal.buscar(arbolLocal.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, TIPO_NODO_MATERIA ));
+        
         int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
         int  bloq1 = 0, bloq2 = 0, bloq3 = 0, tamBloq;
         boolean bandera = true;
         Nodo aux, padre_aux = null;
-        n.getInfo().ImprimirInfo();
         
         padre_aux = arbolLocal.buscar(arbolLocal.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, Parametros.TIPO_NODO_MATERIA));
         padre_aux.eliminarHijo();
         
-        if(materia[id_rnd_materia].getTipoMateria() == 1)
+            if(materia[id_rnd_materia].getTipoMateria() == 1)
             {
                 cantbloque = 1;
                 bloq1 = 2;
@@ -399,7 +373,6 @@ public final class AlgoritmoGenetico
                 
                 
             }
-            
             boolean ingresoLaboratorio = false;
             for (int k = 0; k < cantbloque; k++) 
             {
@@ -453,12 +426,12 @@ public final class AlgoritmoGenetico
                     
                     idbloquefinal = idbloque + ((auxD -1) * NUMERO_BLOQUES);
 
-                    if(!diaHoraSalonOcupado[idsalon][idbloquefinal] && perimetroLibre(idsalon, idbloquefinal))
+                    if( !individuo.getDiaHoraSalonOcupado(idsalon, idbloquefinal) && perimetroLibre(idsalon, idbloquefinal, individuoLocal))
                     {
                         aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
                         padre_aux.setHijo(aux); 
-                        diaHoraSalonOcupado[idsalon][idbloquefinal] = true;
-                        semestreBloquesUsados[materia[id_rnd_materia].getSemestre()][idbloquefinal] = bloqueHorario[idbloquefinal];
+                        individuo.setDiaHoraSalonOcupado(idsalon, idbloquefinal, true);                         
+                        individuo.setSemestreBloquesUsados(materia[id_rnd_materia].getSemestre(), idbloquefinal, bloqueHorario[idbloquefinal]); 
                     }else{
                         k--;
                         continue;
@@ -467,186 +440,64 @@ public final class AlgoritmoGenetico
                        
                     
             }
-            
-            iddia = iddiaAnterior = iddiaTrasAnterior = -1;
-            
+                        
         return individuoLocal;
     }
-    /*
-    public void cruzar(Individuo individuo1, Individuo individuo2)
+    
+    public Individuo[] cruzar(Individuo individuo1, Individuo individuo2)
     {
-        Individuo individuoGenerado = individuo1;
-        individuoGenerado.getArbol();
-        int id_rnd_materia = Aleatorio.getAleatorio(0, materia.length);
-        Nodo n =  arbol.buscar(arbol.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, TIPO_NODO_MATERIA ));
-        int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
-        int  bloq1 = 0, bloq2 = 0, bloq3 = 0, tamBloq;
+        Individuo individuoLocal1 = individuo1, individuoLocal2 = individuo2;
+        Arbol arbol1 = individuoLocal1.getArbol();
+        Arbol arbol2 = individuoLocal2.getArbol();
+                     
         boolean bandera = true;
-        Nodo aux, padre_aux = null;
-        n.getInfo().ImprimirInfo();
+        Nodo aux1 = null;
+        Nodo aux2 = null;
+        Nodo auxh1 , auxh2 ;
         
-        padre_aux = arbol.buscar(arbol.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, Parametros.TIPO_NODO_MATERIA));
-        padre_aux.eliminarHijo();
         
-        if(materia[id_rnd_materia].getTipoMateria() == 1)
-            {
-                cantbloque = 1;
-                bloq1 = 2;
-                bloq2 = 0;
-                bloq3 = 0;
-                
-            }
+        int id_rnd_materia1 = 0;
+        int id_rnd_materia2 = 0;
+        
+        while(bandera)
+        {
+            id_rnd_materia1 = Aleatorio.getAleatorio(0, materia.length);
+            id_rnd_materia2 = Aleatorio.getAleatorio(0, materia.length);
             
-            if(materia[id_rnd_materia].getTipoMateria() == 2)
-            {
-                cantbloque = 1;
-                bloq1 = 3;
-                bloq2 = 0;
-                bloq3 = 0;
-            } 
-            
-            if(materia[id_rnd_materia].getTipoMateria() == 3)
-            {
-                cantbloque = 2;
-                bloq1 = 2;
-                bloq2 = 3;
-                bloq3 = 0;
-            } 
-            
-            if(materia[id_rnd_materia].getTipoMateria() == 4)
-            {
-                cantbloque = 3;
-                bloq1 = 2;
-                bloq2 = 2;
-                bloq3 = 2;
-            } 
-            
-            for (int j = 0; j < cantbloque; j++) 
-            {
-                
-                //elegir dia
-                if(j == 1)
-                    iddiaAnterior = iddia;
-                if(j == 2 && bandera)
-                {
-                    iddiaTrasAnterior = iddiaAnterior;
-                    iddiaAnterior = iddia;
-                }
-                iddia = Aleatorio.getAleatorio(1, NUMERO_DIAS);
-                
-                if(materia[id_rnd_materia].getTipoMateria() == 2 || materia[id_rnd_materia].getTipoMateria() == 3 || materia[id_rnd_materia].getTipoMateria() == 4)
-                {
-                    if(j == 1 && iddia == iddiaAnterior)
-                    {
-                        j--;
-                        continue;
-                    }
-                    
-                }
-                
-                if(materia[id_rnd_materia].getTipoMateria() == 4)
-                {                    
-                    if(j == 2 && (iddia == iddiaAnterior || iddia == iddiaTrasAnterior) )
-                    {
-                        bandera = false;
-                        j--;
-                        continue;
-                    }
-                    
-                }                
-               
-                
-                
-            }
-            
-            boolean ingresoLaboratorio = false;
-            for (int k = 0; k < cantbloque; k++) 
-            {
-                int auxD = 0, idbloquefinal;
-                idbloque = Aleatorio.getAleatorio(1, NUMERO_BLOQUES);
-                tamBloq = bloqueHorario[idbloque].getId_horaFin() - bloqueHorario[idbloque].getId_horaInicio() + 1;
-                
-                if(iddia != -1 && k == 0)
-                {
-                    if(tamBloq != bloq1 && bloq1 > 0)
-                    {
-                        k--;
-                        continue;
-                    }
-                    auxD = iddia;
-                }
-
-                if(iddiaAnterior != -1 && k == 1)
-                {
-                    if(tamBloq != bloq2 && bloq2 > 0)
-                    {
-                        k--;
-                        continue;
-                    }
-                    auxD = iddiaAnterior;
-                }
-
-                if(iddiaTrasAnterior != -1 && k == 2)
-                {
-                    if(tamBloq != bloq3 && bloq3 > 0)
-                    {
-                        k--;
-                        continue;
-                    }
-                    auxD = iddiaTrasAnterior;
-                }
-                
-                    
-                    idsalon = Aleatorio.getAleatorio(1, salon.length - 1);
-                    
-                    if(materia[id_rnd_materia].getLaboratorio() == 2 && !ingresoLaboratorio)// requiere laboratorio
-                    {
-                        if(salon[idsalon].getTipoSalon() != 2)
-                        {
-                            k--;
-                            continue;
-                        }else{
-                            ingresoLaboratorio = true;
-                        }
-                    }
-                    
-                    idbloquefinal = idbloque + ((auxD -1) * NUMERO_BLOQUES);
-
-                    if(!diaHoraSalonOcupado[idsalon][idbloquefinal] && perimetroLibre(idsalon, idbloquefinal))
-                    {
-                        aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
-                        padre_aux.setHijo(aux); 
-                        diaHoraSalonOcupado[idsalon][idbloquefinal] = true;
-                        semestreBloquesUsados[materia[id_rnd_materia].getSemestre()][idbloquefinal] = bloqueHorario[idbloquefinal];
-                    }else{
-                        k--;
-                        continue;
-                    }
+            if(materia[id_rnd_materia1].getTipoMateria() == materia[id_rnd_materia2].getTipoMateria() && id_rnd_materia1 != id_rnd_materia2)
+               bandera = false;
+        }
+        
+        aux1 =  arbol1.buscar(arbol1.getRaiz(), new Informacion(materia[id_rnd_materia1].getId(), -1, TIPO_NODO_MATERIA ));
+        aux2 =  arbol2.buscar(arbol2.getRaiz(), new Informacion(materia[id_rnd_materia2].getId(), -1, TIPO_NODO_MATERIA ));
+        
+        
+        
+        auxh1 = aux1.getHijo();
+        auxh2 = aux2.getHijo();
                  
-                       
-                    
-            }
-            
-            iddia = iddiaAnterior = iddiaTrasAnterior = -1;
+        aux1.eliminarHijo();
+        aux2.eliminarHijo();
+        
+        
+        aux1.setHijo(auxh2);
+        aux2.setHijo(auxh1);
+       
+        individuoLocal1.setArbol(arbol1);
+        individuoLocal2.setArbol(arbol2);
+        Individuo vector[] = new Individuo[2];
+      
+        vector[0] = new Individuo(arbol1);
+        vector[1] = new Individuo(arbol2);
+        return vector;     
     }
-    */
+    
     public void selecccionar(ArrayList<Individuo> poblacion, ArrayList<Individuo> listaElite)
     {
         
     }
     
-    private void cargarVectorOcupados()
-    {
-    this.diaHoraSalonOcupado = new boolean[salon.length + 1][(NUMERO_BLOQUES * NUMERO_DIAS) + 1];
-        for (int i = 0; i <= salon.length; i++) 
-            for (int j = 0; j <= NUMERO_BLOQUES * NUMERO_DIAS; j++) 
-                diaHoraSalonOcupado[i][j] = false;
-        
-        for (int i = 0; i < SEMESTRES; i++) 
-            for (int j = 0; j < NUMERO_BLOQUES * NUMERO_DIAS; j++)
-                semestreBloquesUsados[i][j] = null;
-    }
-    
+  
     public boolean maximoIteraciones(int iteraciones)
     {
         return iteraciones >= parametros.ALGORTIMO_GENETICO_CONDICION_PARADA_MAXIMO_ITERACIONES;
@@ -727,7 +578,7 @@ public final class AlgoritmoGenetico
         i++;
         }
     }
-    
+    /*
     public void iterar() throws SQLException
     {
         Individuo individuoInicial = crearIndividuoAlAzar();        
@@ -738,7 +589,6 @@ public final class AlgoritmoGenetico
         while(maximoIteraciones(iterador) || maximoTiempo((int)(marcaTiempoFin - marcaTiempoInicio)) || nivelOptimo())
         {
             
-            /* Seleccionar operador genetico a aplicar */
             idOperadorGenetico = probabilidades();
             
             if(idOperadorGenetico.equals(ALGORTIMO_GENETICO_ID_MUTACION))
@@ -762,7 +612,7 @@ public final class AlgoritmoGenetico
         
         
     }
-    
+    */
     public int probabilidades() // tabu, cruzar, mutar o dejar pasar
     {
         Random rn = new Random();
