@@ -19,11 +19,12 @@ public class Individuo {
     private Arbol arbol;
     private BloqueHorario semestreBloquesUsados[][];
     private boolean diaHoraSalonOcupado[][];    
-    
-    public Individuo(Arbol arbol) {
+
+    public Individuo(Arbol arbol) throws SQLException {
         this.valorFuncionObjetivo = valorFuncionObjetivo;
         this.arbol = arbol;
-        semestreBloquesUsados = new BloqueHorario[SEMESTRES][NUMERO_DIAS * NUMERO_BLOQUES];
+        this.semestreBloquesUsados = new BloqueHorario[SEMESTRES][NUMERO_DIAS * NUMERO_BLOQUES];
+        this.diaHoraSalonOcupado = new boolean[ cantidadSalones() + 1 ][ NUMERO_BLOQUES * NUMERO_DIAS ];
     }
     
     public int getValorFuncionObjetivo() {
@@ -58,7 +59,7 @@ public class Individuo {
                     for (int k = j; k < ( NUMERO_BLOQUES * NUMERO_DIAS ) -1; k++) 
                     { 
                         if(k != j && semestreBloquesUsados[i][k] != null)                        
-                        {  
+                        {  if(BloqueHorario.choque(semestreBloquesUsados[i][j], semestreBloquesUsados[i][k]) > 0)System.out.println(semestreBloquesUsados[i][j].getId()+" con "+semestreBloquesUsados[i][k].getId());
                             rtn = rtn + BloqueHorario.choque(semestreBloquesUsados[i][j], semestreBloquesUsados[i][k]);
                         }
                     }
@@ -106,6 +107,13 @@ public class Individuo {
     public boolean getDiaHoraSalonOcupado(int x, int y)
     {
         return diaHoraSalonOcupado[x][y];
+    }
+    
+    public void mostrar()
+    {
+        System.out.println("este arbol:");
+        this.arbol.mostrarArbol(this.arbol.getRaiz());
+        System.out.println("con este numero de cooliciones:" + funcionObjetivo());
     }
             
     

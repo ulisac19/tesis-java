@@ -31,7 +31,7 @@ public class Rango
         
         public boolean estaDentroRango(int c)
         {
-            return inicio >= c && c <= fin;
+            return inicio <= c && c >= fin;
         }
         
     }

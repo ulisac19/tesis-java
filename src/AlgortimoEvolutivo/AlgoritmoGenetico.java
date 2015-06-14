@@ -101,7 +101,7 @@ public final class AlgoritmoGenetico
         
     }
     
-    public Individuo crearIndividuoAlAzar(Individuo individuo) throws SQLException
+    public void crearIndividuoAlAzar(Individuo individuo) throws SQLException
     {
         Arbol arbol = individuo.getArbol();
         Aleatorio rnd = new Aleatorio(); 
@@ -258,11 +258,7 @@ public final class AlgoritmoGenetico
             
             iddia = iddiaAnterior = iddiaTrasAnterior = -1;
             
-            
-            
         }
-        return new Individuo(arbol);
-         
     }
     
    
@@ -290,9 +286,10 @@ public final class AlgoritmoGenetico
         return band; 
     }
     
-    public Individuo mutar(Individuo individuo, Arbol arbolLocal) throws SQLException
+    public void mutar(Individuo individuoLocal) throws SQLException
     {
-        Individuo individuoLocal = individuo;
+       
+        Arbol arbolLocal = individuoLocal.getArbol();
         int id_rnd_materia = Aleatorio.getAleatorio(0, materia.length);
         
         int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
@@ -426,12 +423,12 @@ public final class AlgoritmoGenetico
                     
                     idbloquefinal = idbloque + ((auxD -1) * NUMERO_BLOQUES);
 
-                    if( !individuo.getDiaHoraSalonOcupado(idsalon, idbloquefinal) && perimetroLibre(idsalon, idbloquefinal, individuoLocal))
+                    if( !individuoLocal.getDiaHoraSalonOcupado(idsalon, idbloquefinal) && perimetroLibre(idsalon, idbloquefinal, individuoLocal))
                     {
                         aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
                         padre_aux.setHijo(aux); 
-                        individuo.setDiaHoraSalonOcupado(idsalon, idbloquefinal, true);                         
-                        individuo.setSemestreBloquesUsados(materia[id_rnd_materia].getSemestre(), idbloquefinal, bloqueHorario[idbloquefinal]); 
+                        individuoLocal.setDiaHoraSalonOcupado(idsalon, idbloquefinal, true);                         
+                        individuoLocal.setSemestreBloquesUsados(materia[id_rnd_materia].getSemestre(), idbloquefinal, bloqueHorario[idbloquefinal]); 
                     }else{
                         k--;
                         continue;
@@ -440,11 +437,9 @@ public final class AlgoritmoGenetico
                        
                     
             }
-                        
-        return individuoLocal;
     }
     
-    public Individuo[] cruzar(Individuo individuo1, Individuo individuo2)
+    public void cruzar(Individuo individuo1, Individuo individuo2) throws SQLException
     {
         Individuo individuoLocal1 = individuo1, individuoLocal2 = individuo2;
         Arbol arbol1 = individuoLocal1.getArbol();
@@ -489,23 +484,41 @@ public final class AlgoritmoGenetico
       
         vector[0] = new Individuo(arbol1);
         vector[1] = new Individuo(arbol2);
-        return vector;     
+        
     }
     
-    public void selecccionar(ArrayList<Individuo> poblacion, ArrayList<Individuo> listaElite)
+    public void selecccionar(Individuo poblacion[], Individuo listaElite[])
     {
+    Individuo aux;
+        for (int i = 0; i < poblacion.length - 1; i++) 
+        {
+            for (int j = i; j < poblacion.length - 1; j++) 
+            {
+                if(poblacion[i].getValorFuncionObjetivo() > poblacion[j].getValorFuncionObjetivo() )
+                {
+                    aux = poblacion[i];
+                    poblacion[i] = poblacion[j];
+                    poblacion[j] = aux; 
+                }                
+            }
+        }
+        
+        for (int i = 0; i < listaElite.length; i++) 
+        {
+            listaElite[i] = poblacion[i];            
+        }
         
     }
     
   
     public boolean maximoIteraciones(int iteraciones)
     {
-        return iteraciones >= parametros.ALGORTIMO_GENETICO_CONDICION_PARADA_MAXIMO_ITERACIONES;
+        return iteraciones >= parametros.ALGORITMO_GENETICO_CONDICION_PARADA_MAXIMO_ITERACIONES;
     }
     
     public boolean maximoTiempo(int tiempo)
     {
-        return tiempo >= parametros.ALGORTIMO_GENETICO_CONDICION_PARADA_MAXIMO_SEGUNDOS;
+        return tiempo >= parametros.ALGORITMO_GENETICO_CONDICION_PARADA_MAXIMO_SEGUNDOS;
     }
     
     public boolean nivelOptimo() //mucho tiempo sin mejora significativamente
@@ -613,40 +626,40 @@ public final class AlgoritmoGenetico
         
     }
     */
-    public int probabilidades() // tabu, cruzar, mutar o dejar pasar
+    public int probabilidades(Parametros parametros) // tabu, cruzar, mutar o dejar pasar
     {
         Random rn = new Random();
-        int numeroAlazar = rn.nextInt(100) + 1;
+        int numeroAlazar =  rn.nextInt(100) + 1;
         int a, b;
-        int rsp = ALGORTIMO_GENETICO_ID_COPIAR;
+        int rsp = ALGORITMO_GENETICO_ID_COPIAR;
         
         Rango mutacion = new Rango();
         Rango cruce = new Rango();
         Rango busqueTabu = new Rango();
         
         a = 1;
-        b = a + (int)parametros.ALGORTIMO_GENETICO_PROBABILIDAD_MUTACION*100;
+        b = a + (int)(parametros.ALGORITMO_GENETICO_PROBABILIDAD_MUTACION*100);
         mutacion.setInicio(a);
         mutacion.setFin(b);
         
         a = b + 1;
-        b = a + (int)parametros.ALGORTIMO_GENETICO_PROBABILIDAD_CRUCE*100;
+        b = a + (int)(parametros.ALGORITMO_GENETICO_PROBABILIDAD_CRUCE*100);
         cruce.setInicio(a);
         cruce.setFin(b);
         
         a = b + 1;
-        b = a + (int)parametros.ALGORTIMO_GENETICO_PROBABILIDAD_BUSQUEDA_TABU*100;
+        b = a + (int)(parametros.ALGORITMO_GENETICO_PROBABILIDAD_BUSQUEDA_TABU*100);
         busqueTabu.setInicio(a);
         busqueTabu.setFin(b);
         
         if(mutacion.estaDentroRango(numeroAlazar))
-            rsp = Parametros.ALGORTIMO_GENETICO_ID_MUTACION;
+            rsp = Parametros.ALGORITMO_GENETICO_ID_MUTACION;
                     
         if(cruce.estaDentroRango(numeroAlazar))
-            rsp = Parametros.ALGORTIMO_GENETICO_ID_CRUCE;
+            rsp = Parametros.ALGORITMO_GENETICO_ID_CRUCE;
                     
         if(busqueTabu.estaDentroRango(numeroAlazar))
-            rsp = Parametros.ALGORTIMO_GENETICO_ID_BUSQUEDA_TABU;
+            rsp = Parametros.ALGORITMO_GENETICO_ID_BUSQUEDA_TABU;
     
     return rsp;      
     }
