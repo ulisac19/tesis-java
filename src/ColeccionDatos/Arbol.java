@@ -158,7 +158,8 @@ public class Arbol
                     }       
                 }
         }
-       
+    
+    miConexion.close();
     return arbol;    
     }
     

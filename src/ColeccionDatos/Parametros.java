@@ -43,7 +43,8 @@ public class Parametros {
     public int ALGORITMO_TABU_CONDICION_PARADA_MAXIMO_SEGUNDOS;
     public int ALGORITMO_TABU_TOPE_LISTA_TABU;
     
-    public Parametros() throws SQLException {
+    public Parametros() throws SQLException
+    {
         
         Connection miConexion;
         miConexion =  ConexionDB.GetConnection();
@@ -76,7 +77,8 @@ public class Parametros {
             this.ALGORITMO_TABU_CANTIDAD_MINIMO_ITERACIONES             = (int) queryTabu.getObject("generacion_inicio");
             this.ALGORITMO_TABU_CONDICION_PARADA_MAXIMO_SEGUNDOS        = (int) queryTabu.getObject("tiempo_maximo");
             this.ALGORITMO_TABU_TOPE_LISTA_TABU                         = (int) queryTabu.getObject("tope_lista_tabu");
-        
+     
+    miConexion.close();    
     }
     
 }

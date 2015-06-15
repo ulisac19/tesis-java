@@ -98,7 +98,7 @@ public final class AlgoritmoGenetico
          j++;   
         }
        
-        
+    miConexion.close();    
     }
     
     public void crearIndividuoAlAzar(Individuo individuo) throws SQLException
@@ -283,6 +283,7 @@ public final class AlgoritmoGenetico
             idaux = (int)queryMateria.getObject("id");
             band = band || ! i.getDiaHoraSalonOcupado(idsalon,idaux);               
         }
+        miConexion.close();
         return band; 
     }
     
@@ -294,10 +295,24 @@ public final class AlgoritmoGenetico
         
         int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
         int  bloq1 = 0, bloq2 = 0, bloq3 = 0, tamBloq;
-        boolean bandera = true;
-        Nodo aux, padre_aux = null;
+        int salonViejo, horarioViejo;
+        boolean bandera = true, bandera2 = true;
+        Nodo aux, padre_aux = null, hijo;
         
         padre_aux = arbolLocal.buscar(arbolLocal.getRaiz(), new Informacion(materia[id_rnd_materia].getId(), -1, Parametros.TIPO_NODO_MATERIA));
+        hijo = padre_aux.getHijo();
+        while(bandera2)        
+        {            
+            salonViejo = hijo.getInfo().getDato1();
+            horarioViejo = hijo.getInfo().getDato2();
+            individuoLocal.setDiaHoraSalonOcupado(salonViejo, horarioViejo, false);
+            if( hijo.tieneHermano() )
+            hijo = hijo.getHermano();
+            {
+                bandera2 = false;
+                
+            }
+        }
         padre_aux.eliminarHijo();
         
             if(materia[id_rnd_materia].getTipoMateria() == 1)
@@ -427,6 +442,7 @@ public final class AlgoritmoGenetico
                     {
                         aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
                         padre_aux.setHijo(aux); 
+                        
                         individuoLocal.setDiaHoraSalonOcupado(idsalon, idbloquefinal, true);                         
                         individuoLocal.setSemestreBloquesUsados(materia[id_rnd_materia].getSemestre(), idbloquefinal, bloqueHorario[idbloquefinal]); 
                     }else{
@@ -487,18 +503,21 @@ public final class AlgoritmoGenetico
         
     }
     
-    public void selecccionar(Individuo poblacion[], Individuo listaElite[])
+    public void seleccionar(Individuo poblacion[], Individuo listaElite[])
     {
     Individuo aux;
-        for (int i = 0; i < poblacion.length - 1; i++) 
+    int a, b;
+        for (int i = 0; i < poblacion.length - 2; i++) 
         {
-            for (int j = i; j < poblacion.length - 1; j++) 
+            for (int j = 0; j < poblacion.length - 2; j++) 
             {
-                if(poblacion[i].getValorFuncionObjetivo() > poblacion[j].getValorFuncionObjetivo() )
+                a = poblacion[j].getValorFuncionObjetivo();
+                b = poblacion[j + 1].getValorFuncionObjetivo();
+                if( a > b )
                 {
-                    aux = poblacion[i];
-                    poblacion[i] = poblacion[j];
-                    poblacion[j] = aux; 
+                    aux = poblacion[j];
+                    poblacion[j] = poblacion[j + 1];
+                    poblacion[j + 1] = aux; 
                 }                
             }
         }
@@ -557,6 +576,7 @@ public final class AlgoritmoGenetico
             salon[i] = new Salon(id,nombre , tipoSalon_id);
         i++;
         }
+    miConexion.close();    
     }
     
     private void cargarBloqueHorario() throws SQLException
@@ -590,6 +610,7 @@ public final class AlgoritmoGenetico
             bloqueHorario[i] = new BloqueHorario(id, id_horaInicio, id_horaFin, id_dia);
         i++;
         }
+    miConexion.close();
     }
     /*
     public void iterar() throws SQLException

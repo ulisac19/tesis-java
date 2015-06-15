@@ -3,6 +3,7 @@ package horarios.universitarios;
 import AlgortimoEvolutivo.AlgoritmoGenetico;
 import AlgortimoEvolutivo.Individuo;
 import BaseDatos.ConexionDB;
+import ColeccionDatos.Aleatorio;
 import ColeccionDatos.Arbol;
 import ColeccionDatos.BloqueHorario;
 import ColeccionDatos.Informacion;
@@ -18,65 +19,67 @@ public class HorariosUniversitarios
 {
     private static Individuo poblacion[];
     private static Individuo poblacionElite[];
+    private static Arbol arbol[];
     
     public static void main(String[] args) throws SQLException 
     {     
-        
-        Arbol a1  = null;
-        int generacion = 0;
-        a1 = Arbol.cargarArbol();
-        Individuo i0, i1 = new Individuo(a1);        
+        int generacion = 0, aleatorio1, aleatorio2;
+          
         Parametros p = new Parametros();        
         poblacion = new Individuo[p.ALGORITMO_GENETICO_MAXIMO_NUMERO_GENERACION];
         poblacionElite = new Individuo[p.ALGORITMO_GENETICO_CANTIDAD_LISTA_ELITE];
+        arbol = new Arbol[p.ALGORITMO_GENETICO_CANTIDAD_LISTA_ELITE];
         AlgoritmoGenetico b1 = new AlgoritmoGenetico(p);
         
-        // generar individuo inicial
-        b1.crearIndividuoAlAzar(i1);
         
-        while(generacion < 100 /* p.ALGORTIMO_GENETICO_CANTIDAD_MINIMO_ITERACIONES */ )
+        // generar poblacion     inicial       
+        for (int i = 0; i < p.ALGORITMO_GENETICO_CANTIDAD_LISTA_ELITE; i++) 
+        {   arbol[i] = Arbol.cargarArbol();
+            poblacionElite[i] = new Individuo(arbol[i]);
+            b1.crearIndividuoAlAzar(poblacionElite[i]);
+            
+        }
+        
+        Individuo nd1 = null, nd2 = null;
+        while(generacion < p.ALGORITMO_GENETICO_CANTIDAD_MINIMO_ITERACIONES  )
         {    
             for (int i = 0; i < p.ALGORITMO_GENETICO_MAXIMO_NUMERO_GENERACION; i++) 
             {
-                if(b1.probabilidades(p) == Parametros.ALGORITMO_GENETICO_ID_MUTACION )
-                {   System.out.println(".");
-                    b1.mutar(i1);
-                    poblacion[i] = i1;
-                }else if(b1.probabilidades(p) == Parametros.ALGORITMO_GENETICO_ID_CRUCE && i > 0){
-                    i0 = poblacion[ i - 1 ];
-                    b1.cruzar(i0, i1);
-                    poblacion[i] = i0;
-                    System.out.println("*");
-                    
-                }else{
-                    poblacion[i] = new Individuo(a1);
-                    
-                }
-                
+            aleatorio1 = Aleatorio.getAleatorio(0, poblacionElite.length);
+            nd1 = poblacionElite[aleatorio1];
+                    if(b1.probabilidades(p) == Parametros.ALGORITMO_GENETICO_ID_MUTACION )
+                    {   
+                        b1.mutar(nd1);
+                        poblacion[i] = nd1;
+                        poblacion[i].cargarVectorOcupados();
+                    }else if(b1.probabilidades(p) == Parametros.ALGORITMO_GENETICO_ID_CRUCE){
+                        aleatorio2 = Aleatorio.getAleatorio(0, poblacionElite.length);
+                        nd2 = poblacionElite[aleatorio2];
+                        b1.cruzar(nd1, nd2);
+                        poblacion[i] = nd1;
+                        poblacion[i].cargarVectorOcupados();
+
+                    }else{
+                        poblacion[i] = nd1;
+
+                    }
+
             }
-            
-            b1.selecccionar(poblacion, poblacionElite);
+             
+            b1.seleccionar(poblacion, poblacionElite);
             
             generacion++;
         }
-        for (int i = 0; i < poblacionElite.length; i++) {
+        System.out.println("-------------------------------------------");
+        System.out.println("-------------------------------------------");
+        for (int i = 0; i < poblacionElite.length; i++)
+        {
             poblacionElite[i].mostrar();
-            
         }
-       
-       
-       
-       
         
-        
-        
-            
-               // b1.mutar(i2);
-            
-            
-           // b1.cruzar(i1, i2);
+      
        
-        
+       
     }
 
 }

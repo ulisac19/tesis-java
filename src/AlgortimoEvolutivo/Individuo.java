@@ -46,7 +46,11 @@ public class Individuo {
     {
         semestreBloquesUsados[x][y] = value;
     }
-   
+    public void rebootVectorOcupados()
+    {
+       
+    }
+    
     public int funcionObjetivo()
     {
     int rtn = 0;
@@ -69,7 +73,7 @@ public class Individuo {
         return rtn;
     }
     
-    private void cargarVectorOcupados() throws SQLException
+    public void cargarVectorOcupados() throws SQLException
     {  
         this.diaHoraSalonOcupado = new boolean[cantidadSalones() + 1][(NUMERO_BLOQUES * NUMERO_DIAS) + 1];
         for (int i = 0; i <= cantidadSalones(); i++) 
@@ -96,6 +100,7 @@ public class Individuo {
        
         while(querySalon.next())
             i++;
+        miConexion.close();
         return i;
     }
     
