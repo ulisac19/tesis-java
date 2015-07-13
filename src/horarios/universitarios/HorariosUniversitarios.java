@@ -3,6 +3,7 @@ package horarios.universitarios;
 import AlgortimoEvolutivo.AlgoritmoGenetico;
 import AlgortimoEvolutivo.Individuo;
 import BaseDatos.ConexionDB;
+import BusquedaTabu.AlgoritmoBusquedaTabu;
 import ColeccionDatos.Aleatorio;
 import ColeccionDatos.Arbol;
 import ColeccionDatos.BloqueHorario;
@@ -20,18 +21,21 @@ public class HorariosUniversitarios
     private static Individuo poblacion[];
     private static Individuo poblacionElite[];
     private static Arbol arbol[];
+    private static AlgoritmoBusquedaTabu bt;
+    private static long marcaTiempoFin;
+    private static long marcaTiempoInicio;
     
     public static void main(String[] args) throws SQLException 
     {     
         int generacion = 0, aleatorio1, aleatorio2;
           
-        Parametros p = new Parametros();        
+        Parametros p = new Parametros();    
+        
         poblacion = new Individuo[p.ALGORITMO_GENETICO_MAXIMO_NUMERO_GENERACION];
         poblacionElite = new Individuo[p.ALGORITMO_GENETICO_CANTIDAD_LISTA_ELITE];
         arbol = new Arbol[p.ALGORITMO_GENETICO_CANTIDAD_LISTA_ELITE];
         AlgoritmoGenetico b1 = new AlgoritmoGenetico(p);
-        
-        
+
         // generar poblacion     inicial       
         for (int i = 0; i < p.ALGORITMO_GENETICO_CANTIDAD_LISTA_ELITE; i++) 
         {   arbol[i] = Arbol.cargarArbol();
@@ -41,6 +45,8 @@ public class HorariosUniversitarios
         }
         
         Individuo nd1 = null, nd2 = null;
+        marcaTiempoInicio = System.currentTimeMillis();
+        
         while(generacion < p.ALGORITMO_GENETICO_CANTIDAD_MINIMO_ITERACIONES  )
         {    
             for (int i = 0; i < p.ALGORITMO_GENETICO_MAXIMO_NUMERO_GENERACION; i++) 
@@ -58,7 +64,11 @@ public class HorariosUniversitarios
                         b1.cruzar(nd1, nd2);
                         poblacion[i] = nd1;
                         poblacion[i].cargarVectorOcupados();
-
+                    }else if(b1.probabilidades(p) == Parametros.ALGORITMO_GENETICO_ID_BUSQUEDA_TABU){
+                        
+                        bt = new AlgoritmoBusquedaTabu(p);
+                        
+                        poblacion[i] = nd1;
                     }else{
                         poblacion[i] = nd1;
 
@@ -70,16 +80,15 @@ public class HorariosUniversitarios
             
             generacion++;
         }
+        marcaTiempoFin = System.currentTimeMillis();
+        
         System.out.println("-------------------------------------------");
         System.out.println("-------------------------------------------");
         for (int i = 0; i < poblacionElite.length; i++)
         {
             poblacionElite[i].mostrar();
         }
-        
-      
-       
-       
+System.out.println("tardo "+((marcaTiempoFin - marcaTiempoInicio))+" ml sg");
     }
 
 }

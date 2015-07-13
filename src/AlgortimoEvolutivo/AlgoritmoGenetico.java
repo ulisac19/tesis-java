@@ -5,7 +5,6 @@ import ColeccionDatos.Aleatorio;
 import ColeccionDatos.Arbol;
 import ColeccionDatos.BloqueHorario;
 import ColeccionDatos.Informacion;
-import ColeccionDatos.Materia;
 import ColeccionDatos.Nodo;
 import ColeccionDatos.Parametros;
 import static ColeccionDatos.Parametros.*;
@@ -23,8 +22,6 @@ public final class AlgoritmoGenetico
 { 
     private ArrayList<Individuo> poblacion;
     private ArrayList<Individuo> listaElite;
-    private long marcaTiempoFin;
-    private long marcaTiempoInicio;
     private int iterador;
     private Parametros parametros;
     //private Arbol arbol;
@@ -34,17 +31,15 @@ public final class AlgoritmoGenetico
     private int cantSalones;
     private int cantBloques;
 
-     public AlgoritmoGenetico(Parametros parametro) throws SQLException{
+     public AlgoritmoGenetico(Parametros parametros) throws SQLException
+     {
         poblacion = new ArrayList<>();
-        listaElite = new ArrayList<>();
-        
+        listaElite = new ArrayList<>();        
         iterador = 0;
         this.parametros = parametros;
         cargarSalones();
         cargarBloqueHorario();
-        cargarMaterias();
-       // cargarVectorOcupados();
-        
+        cargarMaterias();           
     }
      
     public int getCantSalones() {
@@ -63,10 +58,6 @@ public final class AlgoritmoGenetico
         this.cantBloques = cantBloques;
     }
    
-    
-   
-    
-    public void agregarIndividuoPoblacion(Individuo individuo){}
     
     public void cargarMaterias() throws SQLException
     {   
@@ -611,42 +602,9 @@ public final class AlgoritmoGenetico
         i++;
         }
     miConexion.close();
-    }
-    /*
-    public void iterar() throws SQLException
-    {
-        Individuo individuoInicial = crearIndividuoAlAzar();        
-        marcaTiempoInicio = System.currentTimeMillis() / 1000L;
-        Integer idOperadorGenetico;
-
-        
-        while(maximoIteraciones(iterador) || maximoTiempo((int)(marcaTiempoFin - marcaTiempoInicio)) || nivelOptimo())
-        {
-            
-            idOperadorGenetico = probabilidades();
-            
-            if(idOperadorGenetico.equals(ALGORTIMO_GENETICO_ID_MUTACION))
-            {
-                mutar(poblacion.get(iterador));
-            }
-            
-            if(idOperadorGenetico.equals(ALGORTIMO_GENETICO_ID_CRUCE))
-            {
-                
-            }
-            
-            if(idOperadorGenetico.equals(ALGORTIMO_GENETICO_ID_BUSQUEDA_TABU))
-            {
-            }
-            
-
-            iterador++;
-            marcaTiempoFin = System.currentTimeMillis() / 1000L;
-        }
-        
-        
-    }
-    */
+    
+    }    
+    
     public int probabilidades(Parametros parametros) // tabu, cruzar, mutar o dejar pasar
     {
         Random rn = new Random();
@@ -685,7 +643,5 @@ public final class AlgoritmoGenetico
     return rsp;      
     }
     
-   
-   
     
 }

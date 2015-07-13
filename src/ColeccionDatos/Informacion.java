@@ -12,8 +12,6 @@ public class Informacion {
         this.tipoNodo = tipoNodo;
     }
     
-  
-    
     public Informacion(int dato1) {
         this.dato1 = dato1;
     }
@@ -55,8 +53,6 @@ public class Informacion {
     public void setTipoNodo(int tipo_nodo) {
         this.tipoNodo = tipoNodo;
     }
-    
-    
     
     public static Informacion crearInformacion(int numero1)
     {
