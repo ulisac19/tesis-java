@@ -116,8 +116,8 @@ public class Individuo {
     
     public void mostrar()
     {
-        System.out.println("este arbol:");
-        this.arbol.mostrarArbol(this.arbol.getRaiz());
+       // System.out.println("este arbol:");
+       // this.arbol.mostrarArbol(this.arbol.getRaiz());
         System.out.println("con este numero de cooliciones:" + funcionObjetivo());
     }
             

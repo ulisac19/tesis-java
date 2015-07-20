@@ -2,9 +2,15 @@ package BusquedaTabu;
 
 import AlgortimoEvolutivo.Individuo;
 import BaseDatos.ConexionDB;
+import ColeccionDatos.Aleatorio;
 import ColeccionDatos.Arbol;
 import ColeccionDatos.BloqueHorario;
+import ColeccionDatos.Informacion;
+import ColeccionDatos.Nodo;
 import ColeccionDatos.Parametros;
+import static ColeccionDatos.Parametros.NUMERO_BLOQUES;
+import static ColeccionDatos.Parametros.TIPO_NODO_MATERIA;
+import static ColeccionDatos.Parametros.TIPO_NODO_SALON_HORARIO;
 import ColeccionDatos.Salon;
 import ColeccionDatos.Seccion;
 import java.sql.Connection;
@@ -30,7 +36,7 @@ public class AlgoritmoBusquedaTabu
     private int cantSalones;
     private int cantBloques;
     
-    public AlgoritmoBusquedaTabu(Parametros parametros) throws SQLException 
+    public AlgoritmoBusquedaTabu(Parametros parametros, Individuo individuoInicial) throws SQLException 
     {
         poblacion = new ArrayList<>();
         listaElite = new ArrayList<>();        
@@ -43,6 +49,165 @@ public class AlgoritmoBusquedaTabu
         cargarMaterias();     
     }
     
+    public void crearIndividuoAlAzar(Individuo individuo) throws SQLException
+    {
+        Arbol arbol = individuo.getArbol();
+        Aleatorio rnd = new Aleatorio(); 
+        int idsalon = 0, idbloque, cantbloque = -1, iddia = 0, iddiaAnterior = -1, iddiaTrasAnterior = -1;
+        int  bloq1 = 0, bloq2 = 0, bloq3 = 0, tamBloq;
+        Nodo aux, padre_aux;
+        boolean bandera;
+        
+        /* Recorrer materias para asignares horarios y salon */
+        for (int i = 0; i < materia.length; i++) 
+        {
+            bandera = true;
+            /* obtener nodo materia */
+            padre_aux = arbol.buscar(arbol.getRaiz(), new Informacion(materia[i].getId(), -1, Parametros.TIPO_NODO_MATERIA));
+            
+            if(materia[i].getTipoMateria() == 1)
+            {
+                cantbloque = 1;
+                bloq1 = 2;
+                bloq2 = 0;
+                bloq3 = 0;
+                
+            }
+            
+            if(materia[i].getTipoMateria() == 2)
+            {
+                cantbloque = 1;
+                bloq1 = 3;
+                bloq2 = 0;
+                bloq3 = 0;
+            } 
+            
+            if(materia[i].getTipoMateria() == 3)
+            {
+                cantbloque = 2;
+                bloq1 = 2;
+                bloq2 = 3;
+                bloq3 = 0;
+            } 
+            
+            if(materia[i].getTipoMateria() == 4)
+            {
+                cantbloque = 3;
+                bloq1 = 2;
+                bloq2 = 2;
+                bloq3 = 2;
+            } 
+            
+            for (int j = 0; j < cantbloque; j++) 
+            {
+                
+                //elegir dia
+                if(j == 1)
+                    iddiaAnterior = iddia;
+                if(j == 2 && bandera)
+                {
+                    iddiaTrasAnterior = iddiaAnterior;
+                    iddiaAnterior = iddia;
+                }
+                iddia = rnd.getAleatorio(1, 5);
+                
+                if(materia[i].getTipoMateria() == 2 || materia[i].getTipoMateria() == 3 || materia[i].getTipoMateria() == 4)
+                {
+                    if(j == 1 && iddia == iddiaAnterior)
+                    {
+                        j--;
+                        continue;
+                    }
+                    
+                }
+                
+                if(materia[i].getTipoMateria() == 4)
+                {                    
+                    if(j == 2 && (iddia == iddiaAnterior || iddia == iddiaTrasAnterior) )
+                    {
+                        bandera = false;
+                        j--;
+                        continue;
+                    }
+                    
+                }                
+               
+                
+                
+            }
+            
+            boolean ingresoLaboratorio = false;
+            for (int k = 0; k < cantbloque; k++) 
+            {
+                int auxD = 0, idbloquefinal;
+                idbloque = rnd.getAleatorio(1, NUMERO_BLOQUES);
+                tamBloq = bloqueHorario[idbloque].getId_horaFin() - bloqueHorario[idbloque].getId_horaInicio() + 1;
+                
+                if(iddia != -1 && k == 0)
+                {
+                    if(tamBloq != bloq1 && bloq1 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddia;
+                }
+
+                if(iddiaAnterior != -1 && k == 1)
+                {
+                    if(tamBloq != bloq2 && bloq2 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddiaAnterior;
+                }
+
+                if(iddiaTrasAnterior != -1 && k == 2)
+                {
+                    if(tamBloq != bloq3 && bloq3 > 0)
+                    {
+                        k--;
+                        continue;
+                    }
+                    auxD = iddiaTrasAnterior;
+                }
+                
+                    
+                    idsalon = rnd.getAleatorio(1, salon.length - 1);
+                    
+                    if(materia[i].getLaboratorio() == 2 && !ingresoLaboratorio)// requiere laboratorio
+                    {
+                        if(salon[idsalon].getTipoSalon() != 2)
+                        {
+                            k--;
+                            continue;
+                        }else{
+                            ingresoLaboratorio = true;
+                        }
+                    }
+                    
+                    idbloquefinal = idbloque + ((auxD -1) * NUMERO_BLOQUES);
+
+                    if(!individuo.getDiaHoraSalonOcupado(idsalon,idbloquefinal) && perimetroLibre(idsalon, idbloquefinal, individuo))
+                    {
+                        aux = new Nodo(new Informacion(idsalon,  idbloquefinal , TIPO_NODO_SALON_HORARIO));            
+                        padre_aux.setHijo(aux); 
+                        individuo.setDiaHoraSalonOcupado(idsalon,idbloquefinal, true);
+                        individuo.setSemestreBloquesUsados(materia[i].getSemestre(), idbloquefinal, bloqueHorario[idbloquefinal]); 
+                    }else{
+                        k--;
+                        continue;
+                    }
+                 
+                       
+                    
+            }
+            
+            iddia = iddiaAnterior = iddiaTrasAnterior = -1;
+            
+        }
+    }
     private void cargarBloqueHorario() throws SQLException 
     {   
         int i = 0, id, id_horaInicio, id_horaFin, id_dia;
@@ -134,6 +299,51 @@ public class AlgoritmoBusquedaTabu
         miConexion.close();
         return band; 
     }
+    
+     public void cruzar(Individuo individuo) throws SQLException
+    {
+        Individuo individuoLocal1 = individuo1;
+        Arbol arbol1 = individuoLocal1.getArbol();
+                     
+        boolean bandera = true;
+        Nodo aux1 = null;
+        Nodo aux2 = null;
+        Nodo auxh1 , auxh2 ;
+        
+        
+        int id_rnd_materia1 = 0;
+        int id_rnd_materia2 = 0;
+        
+        while(bandera)
+        {
+            id_rnd_materia1 = Aleatorio.getAleatorio(0, materia.length);
+            id_rnd_materia2 = Aleatorio.getAleatorio(0, materia.length);
+            
+            if(materia[id_rnd_materia1].getTipoMateria() == materia[id_rnd_materia2].getTipoMateria() && id_rnd_materia1 != id_rnd_materia2)
+               bandera = false;
+        }
+        
+        aux1 =  arbol1.buscar(arbol1.getRaiz(), new Informacion(materia[id_rnd_materia1].getId(), -1, TIPO_NODO_MATERIA ));
+        
+        
+        
+        auxh1 = aux1.getHijo();
+        auxh2 = aux2.getHijo();
+                 
+        aux1.eliminarHijo();
+        aux2.eliminarHijo();
+        
+        
+        aux1.setHijo(auxh2);
+        aux2.setHijo(auxh1);
+       
+        individuoLocal1.setArbol(arbol1);
+        Individuo vector[] = new Individuo[2];
+      
+        vector[0] = new Individuo(arbol1);
+        
+    }
+    
     
     public int getCantSalones() {
         return cantSalones;
